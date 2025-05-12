@@ -31,45 +31,67 @@ const Testimonials = () => {
           });
         });
         
-        setTestimonials(fetchedTestimonials);
+        if (fetchedTestimonials.length > 0) {
+          setTestimonials(fetchedTestimonials);
+        } else {
+          // Use default testimonials if none are found in Firebase
+          setTestimonials([
+            {
+              id: "1",
+              name: "Sarah T.",
+              location: "Johannesburg",
+              text: "Absolute lifesaver! We traveled with our 8-month-old and didn't have to worry about packing any baby gear. Everything was spotless and high quality.",
+              rating: 5
+            },
+            {
+              id: "2",
+              name: "Michael R.",
+              location: "Cape Town",
+              text: "The NappyNow service was incredible! We ran out of nappies at 9 PM and they had them delivered within the hour. Cannot recommend enough!",
+              rating: 5
+            },
+            {
+              id: "3",
+              name: "Emma K.",
+              location: "Durban",
+              text: "We've used baby gear rental services before, but Ballito Baby Gear is on another level. The quality of the equipment and the service was impeccable.",
+              rating: 5
+            }
+          ]);
+        }
         setLoading(false);
       } catch (error) {
         console.error("Error fetching testimonials:", error);
+        // Use default testimonials on error
+        setTestimonials([
+          {
+            id: "1",
+            name: "Sarah T.",
+            location: "Johannesburg",
+            text: "Absolute lifesaver! We traveled with our 8-month-old and didn't have to worry about packing any baby gear. Everything was spotless and high quality.",
+            rating: 5
+          },
+          {
+            id: "2",
+            name: "Michael R.",
+            location: "Cape Town",
+            text: "The NappyNow service was incredible! We ran out of nappies at 9 PM and they had them delivered within the hour. Cannot recommend enough!",
+            rating: 5
+          },
+          {
+            id: "3",
+            name: "Emma K.",
+            location: "Durban",
+            text: "We've used baby gear rental services before, but Ballito Baby Gear is on another level. The quality of the equipment and the service was impeccable.",
+            rating: 5
+          }
+        ]);
         setLoading(false);
       }
     };
     
     fetchTestimonials();
   }, []);
-  
-  // If no testimonials are available, use these defaults
-  useEffect(() => {
-    if (!loading && testimonials.length === 0) {
-      setTestimonials([
-        {
-          id: "1",
-          name: "Sarah T.",
-          location: "Johannesburg",
-          text: "Absolute lifesaver! We traveled with our 8-month-old and didn't have to worry about packing any baby gear. Everything was spotless and high quality.",
-          rating: 5
-        },
-        {
-          id: "2",
-          name: "Michael R.",
-          location: "Cape Town",
-          text: "The NappyNow service was incredible! We ran out of nappies at 9 PM and they had them delivered within the hour. Cannot recommend enough!",
-          rating: 5
-        },
-        {
-          id: "3",
-          name: "Emma K.",
-          location: "Durban",
-          text: "We've used baby gear rental services before, but Ballito Baby Gear is on another level. The quality of the equipment and the service was impeccable.",
-          rating: 5
-        }
-      ]);
-    }
-  }, [loading, testimonials]);
   
   const handlePrev = () => {
     setCurrentIndex((prevIndex) => 
@@ -85,6 +107,28 @@ const Testimonials = () => {
   
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
+  };
+  
+  // Single card testimonial display
+  const renderSingleCard = () => {
+    if (testimonials.length === 0) return null;
+    
+    const testimonial = testimonials[currentIndex];
+    return (
+      <div className="testimonial-card px-4 max-w-2xl mx-auto">
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="flex items-center mb-4">
+            <div className="text-accent flex">
+              {[...Array(testimonial.rating)].map((_, i) => (
+                <Star key={i} fill="currentColor" />
+              ))}
+            </div>
+          </div>
+          <p className="mb-4 italic">"{testimonial.text}"</p>
+          <div className="font-medium">{testimonial.name}, {testimonial.location}</div>
+        </div>
+      </div>
+    );
   };
   
   return (
@@ -109,37 +153,11 @@ const Testimonials = () => {
         {/* Testimonials Slider */}
         <div className="overflow-hidden mx-10">
           {loading ? (
-            <div className="flex gap-4">
-              {[1, 2, 3].map((n) => (
-                <div key={n} className="min-w-full md:min-w-[33.33%] px-4">
-                  <Skeleton className="h-48 w-full rounded-lg" />
-                </div>
-              ))}
+            <div className="flex justify-center">
+              <Skeleton className="h-48 w-full max-w-2xl rounded-lg" />
             </div>
           ) : (
-            <div 
-              className="flex transition-transform duration-300"
-              style={{ 
-                transform: `translateX(-${currentIndex * 100}%)`,
-                width: `${testimonials.length * 100}%`
-              }}
-            >
-              {testimonials.map((testimonial) => (
-                <div key={testimonial.id} className="testimonial-card min-w-full md:min-w-[33.33%] px-4">
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex items-center mb-4">
-                      <div className="text-accent flex">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} fill="currentColor" />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="mb-4 italic">"{testimonial.text}"</p>
-                    <div className="font-medium">{testimonial.name}, {testimonial.location}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            renderSingleCard()
           )}
         </div>
         
