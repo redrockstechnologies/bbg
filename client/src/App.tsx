@@ -10,6 +10,8 @@ import Home from "@/pages/Home";
 import Gear from "@/pages/Gear";
 import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
+import { EnquiryProvider } from "./context/EnquiryContext";
+import { AuthProvider } from "./context/AuthContext";
 
 function Router() {
   return (
@@ -25,18 +27,22 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <div className="flex flex-col min-h-screen">
-          <Navbar />
-          <main className="flex-grow">
-            <Router />
-          </main>
-          <Footer />
-        </div>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <AuthProvider>
+      <EnquiryProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <div className="flex flex-col min-h-screen">
+              <Navbar />
+              <main className="flex-grow">
+                <Router />
+              </main>
+              <Footer />
+            </div>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </EnquiryProvider>
+    </AuthProvider>
   );
 }
 

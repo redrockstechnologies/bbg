@@ -1,0 +1,37 @@
+I want to build a website for my business: Ballito Baby Gear, which provides holidaying parents with baby gear rentals so they can avoid playing Tetris with the boot of their car. I’ve attached our logo. Our slogan is: “Experience Effortless Holidays” or “Experience Effortless Holidays with Baby.” We also love the phrase: “Relax, everything Baby needs is already here.”
+
+The website will have 4 pages:
+
+1. Home: This page will have four sections:
+• Top Section: A background image with the “Relax...” phrase overlaid.
+• About Section: Briefly explains what we do and who we do it for.
+• Services Section: Showcases our two services—Baby Gear Rentals and NappyNow—using two side-by-side clickable cards, each with an image, title, and short description. The Baby Gear Rentals card links to the Our Gear page; NappyNow links to the Contact Us page.
+• Testimonials Section: Dynamically connected to a database.
+
+2. Our Gear: Dynamically displays all rental items from the Gear database. Items are shown in rows of three, each as a card with a round image, title (ItemType), daily/weekly prices, and additional details (if available). All pulled from Firebase.
+
+3. Contact Us: Allows users to send queries.
+
+4. Admin Portal: Secured by username ‘admin’ and password ‘password’. No Firebase Auth—credentials stored in a collection. Admins can view, add, edit, or delete database items, which automatically updates relevant pages.
+
+Firebase Info:
+
+apiKey: "AIzaSyDFqw6BdP2DADQJAmphozyoeoGf6Zs-pnw"
+authDomain: "gearout3.firebaseapp.com"
+projectId: "gearout3"
+storageBucket: "gearout3.firebasestorage.app"
+messagingSenderId: "512167153796"
+appId: "1:512167153796:web:d920ba6859b0490176b2d1"
+measurementId: "G-RLJ1F6CDD9"
+Gear Database Fields:
+• ItemType (String) – used as the title
+• DayCost (String) – per-day cost
+• WeekCost (String) – per-week cost
+• AdditionalDeets (String) – optional extra info
+
+Theme:
+• Background: #FFEFF3
+• Text: #620021
+• Card: #FFDEE4
+• Titles: Gelica font
+• Body: Figtree font
