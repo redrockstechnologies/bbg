@@ -22,21 +22,21 @@ const Footer = () => {
             <ul className="space-y-2">
               <li>
                 <Link href="/">
-                  <a className="hover:text-accent transition-colors">Home</a>
+                  <span className="hover:text-accent transition-colors cursor-pointer">Home</span>
                 </Link>
               </li>
               <li>
                 <Link href="/gear">
-                  <a className="hover:text-accent transition-colors">Our Gear</a>
+                  <span className="hover:text-accent transition-colors cursor-pointer">Our Gear</span>
                 </Link>
               </li>
               <li>
                 <Link href="/contact">
-                  <a className="hover:text-accent transition-colors">Contact Us</a>
+                  <span className="hover:text-accent transition-colors cursor-pointer">Contact Us</span>
                 </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-accent transition-colors">Terms & Conditions</a>
+                <span className="hover:text-accent transition-colors cursor-pointer">Terms & Conditions</span>
               </li>
             </ul>
           </div>
@@ -64,15 +64,15 @@ const Footer = () => {
           <div>
             <h3 className="text-lg mb-4">Follow Us</h3>
             <div className="flex space-x-4">
-              <a href="#" className="text-white hover:text-accent transition-colors">
+              <span className="text-white hover:text-accent transition-colors cursor-pointer">
                 <Facebook size={24} />
-              </a>
-              <a href="#" className="text-white hover:text-accent transition-colors">
+              </span>
+              <span className="text-white hover:text-accent transition-colors cursor-pointer">
                 <Instagram size={24} />
-              </a>
-              <a href="#" className="text-white hover:text-accent transition-colors">
+              </span>
+              <span className="text-white hover:text-accent transition-colors cursor-pointer">
                 <FaWhatsapp size={24} />
-              </a>
+              </span>
             </div>
             
             <div className="mt-6">

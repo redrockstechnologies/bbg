@@ -23,9 +23,9 @@ const Hero = () => {
           Experience effortless holidays with Ballito Baby Gear
         </p>
         <Link href="/gear">
-          <a className="bg-accent hover:bg-accent/90 text-white font-medium py-3 px-6 rounded-full inline-block transition-colors">
+          <span className="bg-accent hover:bg-accent/90 text-white font-medium py-3 px-6 rounded-full inline-block transition-colors cursor-pointer">
             Browse Our Gear
-          </a>
+          </span>
         </Link>
       </div>
     </div>

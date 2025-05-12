@@ -18,33 +18,33 @@ const Navbar = () => {
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <Link href="/">
-          <a className="flex items-center">
-            <Logo className="h-12 bg-primary p-1 rounded" />
-          </a>
-        </Link>
+        <div className="flex items-center">
+          <Link href="/">
+            <Logo className="h-12 bg-primary p-1 rounded cursor-pointer" />
+          </Link>
+        </div>
         
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
           <Link href="/">
-            <a className={`text-primary hover:text-accent font-medium py-2 ${isActive('/') ? 'active-tab' : ''}`}>
+            <span className={`text-primary hover:text-accent font-medium py-2 cursor-pointer ${isActive('/') ? 'active-tab' : ''}`}>
               Home
-            </a>
+            </span>
           </Link>
           <Link href="/gear">
-            <a className={`text-primary hover:text-accent font-medium py-2 ${isActive('/gear') ? 'active-tab' : ''}`}>
+            <span className={`text-primary hover:text-accent font-medium py-2 cursor-pointer ${isActive('/gear') ? 'active-tab' : ''}`}>
               Our Gear
-            </a>
+            </span>
           </Link>
           <Link href="/contact">
-            <a className={`text-primary hover:text-accent font-medium py-2 ${isActive('/contact') ? 'active-tab' : ''}`}>
+            <span className={`text-primary hover:text-accent font-medium py-2 cursor-pointer ${isActive('/contact') ? 'active-tab' : ''}`}>
               Contact Us
-            </a>
+            </span>
           </Link>
           <Link href="/admin">
-            <a className={`text-primary hover:text-accent font-medium py-2 ${isActive('/admin') ? 'active-tab' : ''}`}>
+            <span className={`text-primary hover:text-accent font-medium py-2 cursor-pointer ${isActive('/admin') ? 'active-tab' : ''}`}>
               Admin
-            </a>
+            </span>
           </Link>
         </div>
         
@@ -60,36 +60,36 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <div className="md:hidden bg-white pb-4 px-4">
           <Link href="/">
-            <a 
-              className="block py-2 text-primary hover:text-accent font-medium"
+            <span 
+              className="block py-2 text-primary hover:text-accent font-medium cursor-pointer"
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
-            </a>
+            </span>
           </Link>
           <Link href="/gear">
-            <a 
-              className="block py-2 text-primary hover:text-accent font-medium"
+            <span 
+              className="block py-2 text-primary hover:text-accent font-medium cursor-pointer"
               onClick={() => setMobileMenuOpen(false)}
             >
               Our Gear
-            </a>
+            </span>
           </Link>
           <Link href="/contact">
-            <a 
-              className="block py-2 text-primary hover:text-accent font-medium"
+            <span 
+              className="block py-2 text-primary hover:text-accent font-medium cursor-pointer"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact Us
-            </a>
+            </span>
           </Link>
           <Link href="/admin">
-            <a 
-              className="block py-2 text-primary hover:text-accent font-medium"
+            <span 
+              className="block py-2 text-primary hover:text-accent font-medium cursor-pointer"
               onClick={() => setMobileMenuOpen(false)}
             >
               Admin
-            </a>
+            </span>
           </Link>
         </div>
       )}

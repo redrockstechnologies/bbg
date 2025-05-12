@@ -22,9 +22,9 @@ const Services = () => {
               From cribs and strollers to high chairs and bath tubs — we have all the essentials to make your baby comfortable on holiday.
             </p>
             <Link href="/gear">
-              <a className="bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full inline-block transition-colors">
+              <span className="bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full inline-block transition-colors cursor-pointer">
                 View Our Gear
-              </a>
+              </span>
             </Link>
           </div>
         </div>
@@ -42,9 +42,9 @@ const Services = () => {
               Need nappies, wipes, or other baby essentials delivered right to your doorstep? Our NappyNow service has you covered.
             </p>
             <Link href="/contact">
-              <a className="bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full inline-block transition-colors">
+              <span className="bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full inline-block transition-colors cursor-pointer">
                 Contact Us
-              </a>
+              </span>
             </Link>
           </div>
         </div>
