@@ -1,0 +1,197 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { insertUserSchema, insertGearItemSchema, insertTestimonialSchema, insertContactMessageSchema } from "@shared/schema";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // prefix all routes with /api
+  
+  // User routes
+  app.post("/api/users", async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      const newUser = await storage.createUser(userData);
+      res.status(201).json(newUser);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid user data", error });
+    }
+  });
+
+  app.get("/api/users/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await storage.getUser(id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching user", error });
+    }
+  });
+
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      // Check hardcoded credentials first
+      if (username === "admin" && password === "password") {
+        return res.status(200).json({ success: true });
+      }
+      
+      // Then check database
+      const user = await storage.getUserByUsername(username);
+      if (user && user.password === password) {
+        return res.status(200).json({ success: true });
+      }
+      
+      res.status(401).json({ message: "Invalid credentials" });
+    } catch (error) {
+      res.status(500).json({ message: "Login error", error });
+    }
+  });
+
+  // Gear items routes
+  app.get("/api/gear", async (req, res) => {
+    try {
+      const gearItems = await storage.getAllGearItems();
+      res.json(gearItems);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching gear items", error });
+    }
+  });
+
+  app.get("/api/gear/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const gearItem = await storage.getGearItem(id);
+      if (!gearItem) {
+        return res.status(404).json({ message: "Gear item not found" });
+      }
+      res.json(gearItem);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching gear item", error });
+    }
+  });
+
+  app.post("/api/gear", async (req, res) => {
+    try {
+      const gearData = insertGearItemSchema.parse(req.body);
+      const newGearItem = await storage.createGearItem(gearData);
+      res.status(201).json(newGearItem);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid gear item data", error });
+    }
+  });
+
+  app.put("/api/gear/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const gearData = insertGearItemSchema.parse(req.body);
+      const updatedGearItem = await storage.updateGearItem(id, gearData);
+      if (!updatedGearItem) {
+        return res.status(404).json({ message: "Gear item not found" });
+      }
+      res.json(updatedGearItem);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid gear item data", error });
+    }
+  });
+
+  app.delete("/api/gear/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteGearItem(id);
+      if (!success) {
+        return res.status(404).json({ message: "Gear item not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting gear item", error });
+    }
+  });
+
+  // Testimonials routes
+  app.get("/api/testimonials", async (req, res) => {
+    try {
+      const testimonials = await storage.getAllTestimonials();
+      res.json(testimonials);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching testimonials", error });
+    }
+  });
+
+  app.get("/api/testimonials/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const testimonial = await storage.getTestimonial(id);
+      if (!testimonial) {
+        return res.status(404).json({ message: "Testimonial not found" });
+      }
+      res.json(testimonial);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching testimonial", error });
+    }
+  });
+
+  app.post("/api/testimonials", async (req, res) => {
+    try {
+      const testimonialData = insertTestimonialSchema.parse(req.body);
+      const newTestimonial = await storage.createTestimonial(testimonialData);
+      res.status(201).json(newTestimonial);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid testimonial data", error });
+    }
+  });
+
+  app.put("/api/testimonials/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const testimonialData = insertTestimonialSchema.parse(req.body);
+      const updatedTestimonial = await storage.updateTestimonial(id, testimonialData);
+      if (!updatedTestimonial) {
+        return res.status(404).json({ message: "Testimonial not found" });
+      }
+      res.json(updatedTestimonial);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid testimonial data", error });
+    }
+  });
+
+  app.delete("/api/testimonials/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteTestimonial(id);
+      if (!success) {
+        return res.status(404).json({ message: "Testimonial not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting testimonial", error });
+    }
+  });
+
+  // Contact messages routes
+  app.post("/api/contact", async (req, res) => {
+    try {
+      const contactData = insertContactMessageSchema.parse(req.body);
+      const newMessage = await storage.createContactMessage(contactData);
+      res.status(201).json(newMessage);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid contact message data", error });
+    }
+  });
+
+  app.get("/api/contact", async (req, res) => {
+    try {
+      const contactMessages = await storage.getAllContactMessages();
+      res.json(contactMessages);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching contact messages", error });
+    }
+  });
+
+  const httpServer = createServer(app);
+
+  return httpServer;
+}

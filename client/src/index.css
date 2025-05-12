@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Gelica';
+  src: url('https://fonts.cdnfonts.com/s/89406/Gelica-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Figtree';
+  src: url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Base colors */
+  --background: 345 100% 97%;
+  --foreground: 340 100% 19%;
+  
+  /* Card colors */
+  --card: 345 100% 94%;
+  --card-foreground: 340 100% 19%;
+  
+  /* Accent colors */
+  --accent: 345 100% 78%;
+  --accent-foreground: 0 0% 100%;
+  
+  /* Primary colors */
+  --primary: 340 100% 19%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Secondary colors */
+  --secondary: 345 100% 94%;
+  --secondary-foreground: 340 100% 19%;
+  
+  /* Muted colors */
+  --muted: 345 40% 92%;
+  --muted-foreground: 340 50% 40%;
+  
+  /* Border and input colors */
+  --border: 345 40% 85%;
+  --input: 345 40% 85%;
+  
+  /* Popover colors */
+  --popover: 0 0% 100%;
+  --popover-foreground: 340 100% 19%;
+  
+  /* Destructive colors */
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  
+  /* Ring color */
+  --ring: 340 100% 19%;
+  
+  /* Radius */
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Figtree', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Gelica', serif;
+  }
+}
+
+.active-tab {
+  border-bottom: 3px solid hsl(var(--accent));
+}
+
+.testimonial-card {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.gear-card:hover, .service-card:hover {
+  transform: translateY(-5px);
+  transition: transform 0.3s ease;
+}
