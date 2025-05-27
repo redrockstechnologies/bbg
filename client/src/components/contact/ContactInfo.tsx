@@ -11,7 +11,7 @@ const ContactInfo = () => {
             <Phone className="text-accent mr-3 mt-1" size={20} />
             <div>
               <h3 className="font-medium">Phone</h3>
-              <p>+27 82 123 4567</p>
+              <p>+27 72 125 7824</p>
             </div>
           </div>
           
@@ -19,7 +19,7 @@ const ContactInfo = () => {
             <Mail className="text-accent mr-3 mt-1" size={20} />
             <div>
               <h3 className="font-medium">Email</h3>
-              <p>hello@ballitobabygear.co.za</p>
+              <p>hello.jmbabysitting@gmail.com</p>
             </div>
           </div>
           
@@ -27,7 +27,7 @@ const ContactInfo = () => {
             <Clock className="text-accent mr-3 mt-1" size={20} />
             <div>
               <h3 className="font-medium">Operating Hours</h3>
-              <p>Monday to Sunday: 8:00 AM - 8:00 PM</p>
+              <p>Monday to Saturday: 10:00 AM - 04:00 PM</p>
             </div>
           </div>
           
@@ -47,7 +47,7 @@ const ContactInfo = () => {
         <div className="space-y-4">
           <div>
             <h3 className="font-medium text-lg mb-1">How does delivery and collection work?</h3>
-            <p className="text-sm">We deliver and collect all items at your accommodation at times that suit you. There's no extra charge for this service.</p>
+            <p className="text-sm">We can deliver and collect all items at your accommodation at times that suit you, or to the airport. There is an extra charge for this service.</p>
           </div>
           
           <div>

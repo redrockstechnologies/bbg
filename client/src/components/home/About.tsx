@@ -1,10 +1,28 @@
 import { Check, Sparkles, Truck, Headset } from "lucide-react";
+import { useEffect, useState } from "react";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 const About = () => {
+  const [aboutImg, setAboutImg] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAboutImg = async () => {
+      const configRef = doc(db, "config", "siteImages");
+      const configSnap = await getDoc(configRef);
+      if (configSnap.exists() && configSnap.data().hasOwnProperty("about-img")) {
+        setAboutImg(configSnap.data()["about-img"]);
+      } else {
+        setAboutImg("https://pixabay.com/get/gcf4376522d5e5a5ba78e14349557e981adcc3f0bfabc5693b3906f081219d16c27e4ff906462c15e6aca815a3726d99597016fe149b0f2fdc93f4684a6dcdff4_1280.jpg");
+      }
+    };
+    fetchAboutImg();
+  }, []);
+
   return (
     <section className="mb-16">
       <div className="text-center mb-8">
-        <h2 className="text-3xl md:text-4xl mb-3">About Us</h2>
+        <h2 className="text-3xl md:text-4xl mb-3 font-medium">About Us</h2>
         <div className="w-24 h-1 bg-accent mx-auto"></div>
       </div>
       
@@ -12,21 +30,23 @@ const About = () => {
         <div className="md:flex items-start">
           {/* Image */}
           <div className="md:w-1/3 mb-6 md:mb-0 md:mr-8">
-            <img 
-              src="https://pixabay.com/get/gcf4376522d5e5a5ba78e14349557e981adcc3f0bfabc5693b3906f081219d16c27e4ff906462c15e6aca815a3726d99597016fe149b0f2fdc93f4684a6dcdff4_1280.jpg" 
-              alt="Baby gear collection" 
-              className="rounded-lg shadow-md w-full"
-            />
+            {aboutImg && (
+              <img 
+                src={aboutImg} 
+                alt="Baby gear collection" 
+                className="rounded-lg shadow-md w-full"
+              />
+            )}
           </div>
           
           {/* Content */}
           <div className="md:w-2/3">
-            <h3 className="text-2xl mb-4">Your Holiday, Simplified</h3>
+            <h3 className="text-3xl font-medium mb-4 italic">Your Holiday, Simplified</h3>
             <p className="text-lg mb-4">
-              Ballito Baby Gear provides holidaying parents with premium baby equipment rentals, so you can avoid playing Tetris with the boot of your car.
+              Ballito Baby Gear provides holidaying parents with premium baby equipment rentals, so you can avoid playing Tetris in the boot of your car.
             </p>
             <p className="text-lg mb-4">
-              We deliver and collect everything your little one needs during your stay in Ballito, making your family vacation truly effortless.
+              We can deliver and collect everything your little one needs during your stay in Ballito, making your family vacation truly effortless.
             </p>
             <p className="text-lg mb-6">
               All our equipment is maintained to the highest standards of safety and cleanliness, because we know that's what matters most to you.
@@ -44,11 +64,11 @@ const About = () => {
               </div>
               <div className="flex items-center">
                 <Truck className="text-accent mr-2" size={20} />
-                <span>Free Delivery & Collection</span>
+                <span>Delivery & Collection</span>
               </div>
               <div className="flex items-center">
                 <Headset className="text-accent mr-2" size={20} />
-                <span>24/7 Support</span>
+                <span>WhatsApp Support</span>
               </div>
             </div>
           </div>

@@ -2,8 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { useEnquiry } from "@/context/EnquiryContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -51,20 +49,35 @@ const ContactForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Add enquiry items to the form data
-      const enquiryItemsData = enquiryItems.map(item => ({
-        id: item.id,
-        itemType: item.ItemType,
-        dayCost: item.DayCost,
-        weekCost: item.WeekCost,
-      }));
+      // Format enquiry items as a readable string
+      const formattedEnquiryItems = enquiryItems.map(item => 
+        `${item.ItemType} for ${item.DayCost} per day; ${item.WeekCost} per week`
+      ).join('\n');
       
-      // Submit to Firebase
-      await addDoc(collection(db, "contactMessages"), {
-        ...data,
-        enquiryItems: enquiryItemsData.length > 0 ? JSON.stringify(enquiryItemsData) : null,
-        createdAt: new Date().toISOString(),
+      // Create form data
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("email", data.email);
+      formData.append("phone", data.phone);
+      if (data.arrivalDate) formData.append("arrivalDate", data.arrivalDate);
+      if (data.departureDate) formData.append("departureDate", data.departureDate);
+      formData.append("message", data.message);
+      if (formattedEnquiryItems) {
+        formData.append("enquiryItems", formattedEnquiryItems);
+      }
+      // Add custom subject
+      const randomId = Math.random().toString(36).substring(2, 10);
+      formData.append("_subject", `BBG inquiry from ${data.name} (#${randomId})`);
+      
+      // Submit to FormSubmit
+      const response = await fetch("https://formsubmit.co/hello.jmbabysitting@gmail.com", {
+        method: "POST",
+        body: formData,
       });
+      
+      if (!response.ok) {
+        throw new Error("Failed to submit form");
+      }
       
       // Reset form and enquiry
       form.reset();

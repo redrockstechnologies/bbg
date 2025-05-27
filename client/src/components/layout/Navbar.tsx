@@ -20,7 +20,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/">
-            <Logo className="h-12 bg-primary p-1 rounded cursor-pointer" />
+            <Logo className="h-16 cursor-pointer" variant="header" />
           </Link>
         </div>
         

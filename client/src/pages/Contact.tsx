@@ -17,7 +17,7 @@ const Contact = () => {
       
       <div className="container mx-auto px-4 py-10">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl mb-3">Contact Us</h1>
+          <h1 className="text-4xl md:text-5xl mb-3 font-medium">Contact Us</h1>
           <p className="text-xl max-w-3xl mx-auto">Have questions or need to make a booking? Get in touch with us today.</p>
           <div className="w-24 h-1 bg-accent mx-auto mt-4"></div>
         </div>

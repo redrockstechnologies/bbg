@@ -17,8 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -31,7 +31,7 @@ const LoginForm = () => {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -40,12 +40,12 @@ const LoginForm = () => {
     setIsSubmitting(true);
     
     try {
-      const result = await login(data.username, data.password);
+      const result = await login(data.email, data.password);
       
       if (!result.success) {
         toast({
           title: "Login failed",
-          description: "Invalid username or password. Please try again.",
+          description: "Invalid email or password. Please try again.",
           variant: "destructive",
           duration: 3000,
         });
@@ -71,12 +71,13 @@ const LoginForm = () => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input 
+                    type="email"
                     {...field} 
                     className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
                   />

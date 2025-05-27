@@ -134,7 +134,7 @@ const Testimonials = () => {
   return (
     <section className="mb-16">
       <div className="text-center mb-8">
-        <h2 className="text-3xl md:text-4xl mb-3">What Parents Say</h2>
+        <h2 className="text-3xl md:text-4xl mb-3 font-medium">What Parents Say</h2>
         <div className="w-24 h-1 bg-accent mx-auto"></div>
       </div>
       

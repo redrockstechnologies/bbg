@@ -34,17 +34,18 @@ const GearCard = ({ item }: GearCardProps) => {
   return (
     <div className="gear-card bg-card rounded-lg shadow-lg overflow-hidden transition-all duration-300">
       <div className="p-4 flex flex-col items-center">
-        <div className="w-40 h-40 rounded-full overflow-hidden mb-4 bg-white p-2">
+        <div className="w-40 h-40 rounded-full overflow-hidden mb-4" style={{ backgroundColor: '#FFFFFF' }}>
           <img 
             src={item.ImageUrl || "https://placehold.co/300x300?text=No+Image"} 
             alt={item.ItemType} 
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
           />
         </div>
         <h3 className="text-xl mb-2">{item.ItemType}</h3>
-        <div className="flex justify-between w-full mb-2">
-          <div className="text-sm">Daily: <span className="font-bold">{item.DayCost}</span></div>
-          <div className="text-sm">Weekly: <span className="font-bold">{item.WeekCost}</span></div>
+        <div className="flex justify-center items-center w-full mb-2 gap-4">
+          <div className="text-lg">Daily: <span className="font-bold">{item.DayCost}</span></div>
+          <span className="mx-2 text-gray-400">|</span>
+          <div className="text-lg">Weekly: <span className="font-bold">{item.WeekCost}</span></div>
         </div>
         <p className="text-sm text-center mb-4">{item.AdditionalDeets}</p>
         <Button 

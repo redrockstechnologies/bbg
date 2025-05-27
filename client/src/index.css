@@ -4,15 +4,15 @@
 
 @font-face {
   font-family: 'Gelica';
-  src: url('https://fonts.cdnfonts.com/s/89406/Gelica-Medium.woff') format('woff');
-  font-weight: 500;
+  src: url('/attached_assets/Gelica_Font/Gelica-New.otf') format('opentype');
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Figtree';
-  src: url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap');
+  src: url('/attached_assets/Figtree-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
