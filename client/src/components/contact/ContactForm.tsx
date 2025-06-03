@@ -54,25 +54,23 @@ const ContactForm = () => {
         `${item.ItemType} for ${item.DayCost} per day; ${item.WeekCost} per week`
       ).join('\n');
       
-      // Create form data
-      const formData = new FormData();
-      formData.append("name", data.name);
-      formData.append("email", data.email);
-      formData.append("phone", data.phone);
-      if (data.arrivalDate) formData.append("arrivalDate", data.arrivalDate);
-      if (data.departureDate) formData.append("departureDate", data.departureDate);
-      formData.append("message", data.message);
-      if (formattedEnquiryItems) {
-        formData.append("enquiryItems", formattedEnquiryItems);
-      }
-      // Add custom subject
-      const randomId = Math.random().toString(36).substring(2, 10);
-      formData.append("_subject", `BBG inquiry from ${data.name} (#${randomId})`);
-      
-      // Submit to FormSubmit
-      const response = await fetch("https://formsubmit.co/hello.jmbabysitting@gmail.com", {
+      // Submit to backend API
+      const contactData = {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        arrivalDate: data.arrivalDate || null,
+        departureDate: data.departureDate || null,
+        message: data.message,
+        enquiryItems: formattedEnquiryItems || null,
+      };
+
+      const response = await fetch("/api/contact", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(contactData),
       });
       
       if (!response.ok) {

@@ -221,6 +221,21 @@ export class MemStorage implements IStorage {
     return contactMessage;
   }
 
+  async updateContactMessage(id: number, updateContactMessage: InsertContactMessage): Promise<ContactMessage | undefined> {
+    const existingMessage = this.contactMessages.get(id);
+    if (!existingMessage) {
+      return undefined;
+    }
+
+    const updatedMessage: ContactMessage = { ...updateContactMessage, id };
+    this.contactMessages.set(id, updatedMessage);
+    return updatedMessage;
+  }
+
+  async deleteContactMessage(id: number): Promise<boolean> {
+    return this.contactMessages.delete(id);
+  }
+
   // Price guide operations
   async getPriceGuide(): Promise<PriceGuide | undefined> {
     return this.priceGuide;

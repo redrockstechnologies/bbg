@@ -3,16 +3,17 @@ import { Helmet } from 'react-helmet';
 import { useAuth } from '@/context/AuthContext';
 import LoginForm from '@/components/admin/LoginForm';
 import GearManagement from '@/components/admin/GearManagement';
-import TestimonialManagement from '@/components/admin/TestimonialManagement';
-import ImagesManagement from '@/components/admin/ImagesManagement';
-import DeliveryRatesManagement from '@/components/admin/DeliveryRatesManagement';
-import PriceGuideManagement from '@/components/admin/PriceGuideManagement';
+import TestimonialManagement from "@/components/admin/TestimonialManagement";
+import DeliveryRatesManagement from "@/components/admin/DeliveryRatesManagement";
+import PriceGuideManagement from "@/components/admin/PriceGuideManagement";
+import ImagesManagement from "@/components/admin/ImagesManagement";
+import ContactMessagesManagement from "@/components/admin/ContactMessagesManagement";
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 
 const Admin = () => {
   const { isAuthenticated, logout } = useAuth();
-  const [activeSection, setActiveSection] = useState<'gear' | 'testimonials' | 'images' | 'delivery'>('gear');
+  const [activeSection, setActiveSection] = useState<'gear' | 'testimonials' | 'images' | 'delivery' | 'contact-messages'>('gear');
 
   return (
     <>
@@ -21,13 +22,13 @@ const Admin = () => {
         <meta name="description" content="Admin portal for Ballito Baby Gear. Manage baby gear items and testimonials." />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      
+
       <div className="container mx-auto px-4 py-10">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl mb-3 font-medium">Admin Portal</h1>
           <div className="w-24 h-1 bg-accent mx-auto mt-4"></div>
         </div>
-        
+
         {!isAuthenticated ? (
           // Login Form
           <LoginForm />
@@ -48,6 +49,12 @@ const Admin = () => {
 
             {/* Submenu */}
             <div className="flex space-x-4 mb-8 justify-center">
+              <button
+                className={`px-6 py-2 rounded-full font-medium transition-colors ${activeSection === 'contact-messages' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                onClick={() => setActiveSection('contact-messages')}
+              >
+                Contact Messages
+              </button>
               <button
                 className={`px-6 py-2 rounded-full font-medium transition-colors ${activeSection === 'gear' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
                 onClick={() => setActiveSection('gear')}
@@ -75,6 +82,7 @@ const Admin = () => {
             </div>
 
             {/* Section Content */}
+            {activeSection === 'contact-messages' && <ContactMessagesManagement />}
             {activeSection === 'gear' && (
               <>
                 <GearManagement />
