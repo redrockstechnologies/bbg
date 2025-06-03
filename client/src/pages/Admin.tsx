@@ -48,33 +48,33 @@ const Admin = () => {
             </div>
 
             {/* Submenu */}
-            <div className="flex space-x-4 mb-8 justify-center">
+            <div className="grid grid-cols-2 md:flex md:space-x-4 gap-2 md:gap-0 mb-8 justify-center max-w-4xl mx-auto px-4">
               <button
-                className={`px-6 py-2 rounded-full font-medium transition-colors ${activeSection === 'contact-messages' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'contact-messages' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
                 onClick={() => setActiveSection('contact-messages')}
               >
                 Contact Messages
               </button>
               <button
-                className={`px-6 py-2 rounded-full font-medium transition-colors ${activeSection === 'gear' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'gear' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
                 onClick={() => setActiveSection('gear')}
               >
                 Gear Items
               </button>
               <button
-                className={`px-6 py-2 rounded-full font-medium transition-colors ${activeSection === 'testimonials' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'testimonials' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
                 onClick={() => setActiveSection('testimonials')}
               >
                 Testimonials
               </button>
               <button
-                className={`px-6 py-2 rounded-full font-medium transition-colors ${activeSection === 'images' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'images' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
                 onClick={() => setActiveSection('images')}
               >
                 Images
               </button>
               <button
-                className={`px-6 py-2 rounded-full font-medium transition-colors ${activeSection === 'delivery' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'delivery' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
                 onClick={() => setActiveSection('delivery')}
               >
                 Delivery Rates
