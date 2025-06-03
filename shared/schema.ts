@@ -97,5 +97,24 @@ export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 export type ContactMessage = typeof contactMessages.$inferSelect;
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
 
+// Price guide schema
+export const priceGuides = pgTable("price_guides", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  subtitle: text("subtitle").notNull(),
+  fileUrl: text("file_url"),
+  fileName: text("file_name"),
+});
+
+export const insertPriceGuideSchema = createInsertSchema(priceGuides).pick({
+  title: true,
+  subtitle: true,
+  fileUrl: true,
+  fileName: true,
+});
+
 export type DeliveryRate = typeof deliveryRates.$inferSelect;
 export type InsertDeliveryRate = z.infer<typeof insertDeliveryRateSchema>;
+
+export type PriceGuide = typeof priceGuides.$inferSelect;
+export type InsertPriceGuide = z.infer<typeof insertPriceGuideSchema>;
