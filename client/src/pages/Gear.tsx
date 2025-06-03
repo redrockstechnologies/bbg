@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import GearGrid from '@/components/gear/GearGrid';
 import EnquiryBar from '@/components/gear/EnquiryBar';
 import DeliveryRates from '@/components/gear/DeliveryRates';
+import PriceGuide from '@/components/gear/PriceGuide';
 
 const Gear = () => {
   return (
@@ -28,6 +29,9 @@ const Gear = () => {
         
         {/* Delivery Rates Component */}
         <DeliveryRates />
+        
+        {/* Price Guide Component */}
+        <PriceGuide />
         
         {/* Enquiry Bar Component */}
         <EnquiryBar />

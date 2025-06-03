@@ -2,7 +2,9 @@ import {
   users, type User, type InsertUser,
   gearItems, type GearItem, type InsertGearItem,
   testimonials, type Testimonial, type InsertTestimonial,
-  contactMessages, type ContactMessage, type InsertContactMessage, deliveryRates, type DeliveryRate, type InsertDeliveryRate
+  contactMessages, type ContactMessage, type InsertContactMessage, 
+  deliveryRates, type DeliveryRate, type InsertDeliveryRate,
+  priceGuides, type PriceGuide, type InsertPriceGuide
 } from "@shared/schema";
 
 // Interface for storage operations
@@ -30,6 +32,10 @@ export interface IStorage {
   getAllContactMessages(): Promise<ContactMessage[]>;
   getContactMessage(id: number): Promise<ContactMessage | undefined>;
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
+
+  // Price guide operations
+  getPriceGuide(): Promise<PriceGuide | undefined>;
+  createOrUpdatePriceGuide(priceGuide: InsertPriceGuide): Promise<PriceGuide>;
 }
 
 export class MemStorage implements IStorage {
@@ -37,11 +43,13 @@ export class MemStorage implements IStorage {
   private gearItems: Map<number, GearItem>;
   private testimonials: Map<number, Testimonial>;
   private contactMessages: Map<number, ContactMessage>;
+  private priceGuide: PriceGuide | undefined;
 
   private userCurrentId: number;
   private gearCurrentId: number;
   private testimonialCurrentId: number;
   private contactMessageCurrentId: number;
+  private priceGuideCurrentId: number;
 
   constructor() {
     this.users = new Map();
@@ -53,6 +61,18 @@ export class MemStorage implements IStorage {
     this.gearCurrentId = 1;
     this.testimonialCurrentId = 1;
     this.contactMessageCurrentId = 1;
+    this.priceGuideCurrentId = 1;
+
+    // Initialize with default price guide
+    this.priceGuide = {
+      id: 1,
+      title: "Our Price Guide",
+      subtitle: "View our Price Guide for the full price list of our products & services as well as our terms & conditions",
+      fileUrl: "",
+      fileName: "",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
 
     // Initialize with admin user
     this.createUser({ username: "admin", password: "password" });
@@ -199,6 +219,32 @@ export class MemStorage implements IStorage {
     const contactMessage: ContactMessage = { ...insertContactMessage, id };
     this.contactMessages.set(id, contactMessage);
     return contactMessage;
+  }
+
+  // Price guide operations
+  async getPriceGuide(): Promise<PriceGuide | undefined> {
+    return this.priceGuide;
+  }
+
+  async createOrUpdatePriceGuide(insertPriceGuide: InsertPriceGuide): Promise<PriceGuide> {
+    if (this.priceGuide) {
+      // Update existing
+      this.priceGuide = {
+        ...this.priceGuide,
+        ...insertPriceGuide,
+        updatedAt: new Date().toISOString()
+      };
+    } else {
+      // Create new
+      const id = this.priceGuideCurrentId++;
+      this.priceGuide = {
+        ...insertPriceGuide,
+        id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    }
+    return this.priceGuide;
   }
 }
 

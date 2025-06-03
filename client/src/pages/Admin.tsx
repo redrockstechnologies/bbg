@@ -6,6 +6,7 @@ import GearManagement from '@/components/admin/GearManagement';
 import TestimonialManagement from '@/components/admin/TestimonialManagement';
 import ImagesManagement from '@/components/admin/ImagesManagement';
 import DeliveryRatesManagement from '@/components/admin/DeliveryRatesManagement';
+import PriceGuideManagement from '@/components/admin/PriceGuideManagement';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 
@@ -74,7 +75,12 @@ const Admin = () => {
             </div>
 
             {/* Section Content */}
-            {activeSection === 'gear' && <GearManagement />}
+            {activeSection === 'gear' && (
+              <>
+                <GearManagement />
+                <PriceGuideManagement />
+              </>
+            )}
             {activeSection === 'testimonials' && <TestimonialManagement />}
             {activeSection === 'images' && <ImagesManagement />}
             {activeSection === 'delivery' && <DeliveryRatesManagement />}
