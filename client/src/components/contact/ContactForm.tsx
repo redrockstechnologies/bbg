@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  phone: z.string().min(10, "Please include country code (e.g., +27 82 467 1910)"),
   arrivalDate: z.string().optional(),
   departureDate: z.string().optional(),
   message: z.string().min(5, "Message must be at least 5 characters"),
@@ -141,9 +141,14 @@ const ContactForm = () => {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone Number</FormLabel>
+                <FormLabel>Phone Number (with country code)</FormLabel>
                 <FormControl>
-                  <Input type="tel" {...field} className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" />
+                  <Input 
+                    type="tel" 
+                    {...field} 
+                    placeholder="+27 82 467 1910"
+                    className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

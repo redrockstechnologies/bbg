@@ -32,6 +32,7 @@ export interface IStorage {
   getAllContactMessages(): Promise<ContactMessage[]>;
   getContactMessage(id: number): Promise<ContactMessage | undefined>;
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
+  archiveContactMessage(id: number): Promise<ContactMessage | undefined>;
 
   // Price guide operations
   getPriceGuide(): Promise<PriceGuide | undefined>;
@@ -216,7 +217,12 @@ export class MemStorage implements IStorage {
 
   async createContactMessage(insertContactMessage: InsertContactMessage): Promise<ContactMessage> {
     const id = this.contactMessageCurrentId++;
-    const contactMessage: ContactMessage = { ...insertContactMessage, id };
+    const contactMessage: ContactMessage = { 
+      ...insertContactMessage, 
+      id, 
+      archived: false,
+      createdAt: new Date().toISOString()
+    };
     this.contactMessages.set(id, contactMessage);
     return contactMessage;
   }
@@ -234,6 +240,17 @@ export class MemStorage implements IStorage {
 
   async deleteContactMessage(id: number): Promise<boolean> {
     return this.contactMessages.delete(id);
+  }
+
+  async archiveContactMessage(id: number): Promise<ContactMessage | undefined> {
+    const existingMessage = this.contactMessages.get(id);
+    if (!existingMessage) {
+      return undefined;
+    }
+
+    const updatedMessage: ContactMessage = { ...existingMessage, archived: true };
+    this.contactMessages.set(id, updatedMessage);
+    return updatedMessage;
   }
 
   // Price guide operations

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, Calendar, User, MessageCircle, Package } from "lucide-react";
+import { Mail, Phone, Calendar, User, MessageCircle, Package, Archive, MessageSquare } from "lucide-react";
 
 interface ContactMessage {
   id: number;
@@ -13,12 +13,15 @@ interface ContactMessage {
   departureDate?: string;
   message: string;
   enquiryItems?: string;
+  archived?: boolean;
+  createdAt?: string;
 }
 
 const ContactMessagesManagement = () => {
   const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [filter, setFilter] = useState<'new' | 'archived'>('new');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -30,7 +33,12 @@ const ContactMessagesManagement = () => {
       const response = await fetch("/api/contact");
       if (response.ok) {
         const data = await response.json();
-        setContactMessages(data.sort((a: ContactMessage, b: ContactMessage) => b.id - a.id));
+        // Sort by oldest first (createdAt ascending)
+        setContactMessages(data.sort((a: ContactMessage, b: ContactMessage) => {
+          const dateA = new Date(a.createdAt || 0).getTime();
+          const dateB = new Date(b.createdAt || 0).getTime();
+          return dateA - dateB;
+        }));
       }
     } catch (error) {
       console.error("Error fetching contact messages:", error);
@@ -44,9 +52,62 @@ const ContactMessagesManagement = () => {
     }
   };
 
+  const archiveMessage = async (messageId: number) => {
+    try {
+      const response = await fetch(`/api/contact/${messageId}/archive`, {
+        method: 'PATCH',
+      });
+      
+      if (response.ok) {
+        fetchContactMessages();
+        toast({
+          title: "Success",
+          description: "Message archived successfully",
+        });
+      }
+    } catch (error) {
+      console.error("Error archiving message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to archive message",
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Not specified";
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const formatDateTime = (dateString?: string) => {
+    if (!dateString) return "Unknown";
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + " at " + date.toLocaleTimeString();
+  };
+
+  const formatPhoneForWhatsApp = (phone: string) => {
+    // Remove all non-numeric characters except +
+    let cleaned = phone.replace(/[^\d+]/g, '');
+    
+    // If it starts with +, remove it
+    if (cleaned.startsWith('+')) {
+      cleaned = cleaned.substring(1);
+    }
+    
+    // If it starts with 0, assume it's South African and replace with 27
+    if (cleaned.startsWith('0')) {
+      cleaned = '27' + cleaned.substring(1);
+    }
+    
+    return cleaned;
+  };
+
+  const openWhatsApp = (message: ContactMessage) => {
+    const formattedPhone = formatPhoneForWhatsApp(message.phone);
+    const whatsappMessage = `Hi ${message.name}, thank you for your inquiry about Ballito Baby Gear rental services. How can we assist you?`;
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(whatsappMessage)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const openEmailClient = (message: ContactMessage) => {
@@ -55,6 +116,11 @@ const ContactMessagesManagement = () => {
     const mailto = `mailto:${message.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailto);
   };
+
+  const filteredMessages = contactMessages.filter(message => {
+    if (filter === 'new') return !message.archived;
+    return message.archived;
+  });
 
   if (isLoading) {
     return <div className="text-center py-8">Loading contact messages...</div>;
@@ -69,13 +135,33 @@ const ContactMessagesManagement = () => {
         </Button>
       </div>
 
-      {contactMessages.length === 0 ? (
+      {/* Filter toggle */}
+      <div className="flex justify-center space-x-4 mb-6">
+        <button
+          className={`px-6 py-2 rounded-full font-medium transition-colors ${
+            filter === 'new' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'
+          }`}
+          onClick={() => setFilter('new')}
+        >
+          New Messages ({contactMessages.filter(m => !m.archived).length})
+        </button>
+        <button
+          className={`px-6 py-2 rounded-full font-medium transition-colors ${
+            filter === 'archived' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'
+          }`}
+          onClick={() => setFilter('archived')}
+        >
+          Archived ({contactMessages.filter(m => m.archived).length})
+        </button>
+      </div>
+
+      {filteredMessages.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          No contact messages yet.
+          No {filter} messages yet.
         </div>
       ) : (
         <div className="grid gap-4">
-          {contactMessages.map((message) => (
+          {filteredMessages.map((message) => (
             <div
               key={message.id}
               className="bg-white rounded-lg shadow-md p-6 border hover:shadow-lg transition-shadow"
@@ -86,15 +172,37 @@ const ContactMessagesManagement = () => {
                   <div>
                     <h3 className="text-lg font-semibold">{message.name}</h3>
                     <p className="text-sm text-gray-600">Message #{message.id}</p>
+                    <p className="text-xs text-gray-500">Submitted: {formatDateTime(message.createdAt)}</p>
                   </div>
                 </div>
-                <Button
-                  onClick={() => openEmailClient(message)}
-                  className="bg-accent hover:bg-accent/90 text-white"
-                  size="sm"
-                >
-                  Reply via Email
-                </Button>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={() => openWhatsApp(message)}
+                    className="bg-green-500 hover:bg-green-600 text-white"
+                    size="sm"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-1" />
+                    Send WhatsApp
+                  </Button>
+                  <Button
+                    onClick={() => openEmailClient(message)}
+                    className="bg-accent hover:bg-accent/90 text-white"
+                    size="sm"
+                  >
+                    <Mail className="w-4 h-4 mr-1" />
+                    Reply via Email
+                  </Button>
+                  {!message.archived && (
+                    <Button
+                      onClick={() => archiveMessage(message.id)}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Archive className="w-4 h-4 mr-1" />
+                      Archive
+                    </Button>
+                  )}
+                </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4 mb-4">

@@ -5,7 +5,7 @@ import { insertUserSchema, insertGearItemSchema, insertTestimonialSchema, insert
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
-  
+
   // User routes
   app.post("/api/users", async (req, res) => {
     try {
@@ -33,18 +33,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      
+
       // Check hardcoded credentials first
       if (username === "admin" && password === "password") {
         return res.status(200).json({ success: true });
       }
-      
+
       // Then check database
       const user = await storage.getUserByUsername(username);
       if (user && user.password === password) {
         return res.status(200).json({ success: true });
       }
-      
+
       res.status(401).json({ message: "Invalid credentials" });
     } catch (error) {
       res.status(500).json({ message: "Login error", error });
@@ -171,23 +171,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Contact messages routes
   app.post("/api/contact", async (req, res) => {
     try {
-      const contactData = insertContactMessageSchema.parse(req.body);
-      const newMessage = await storage.createContactMessage(contactData);
-      res.status(201).json(newMessage);
+      const messageData = {
+        ...req.body,
+        createdAt: new Date().toISOString(),
+        archived: false
+      };
+      const parsed = insertContactMessageSchema.parse(messageData);
+      const message = await storage.createContactMessage(parsed);
+      res.status(201).json(message);
     } catch (error) {
-      res.status(400).json({ message: "Invalid contact message data", error });
+      console.error("Error creating contact message:", error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create contact message" });
+      }
     }
   });
 
+  app.patch("/api/contact/:id/archive", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const message = await storage.archiveContactMessage(id);
+      if (!message) {
+        res.status(404).json({ error: "Contact message not found" });
+        return;
+      }
+      res.json(message);
+    } catch (error) {
+      console.error("Error archiving contact message:", error);
+      res.status(500).json({ error: "Failed to archive contact message" });
+    }
+  });
+  // Contact message routes
   app.get("/api/contact", async (req, res) => {
     try {
-      const contactMessages = await storage.getAllContactMessages();
-      res.json(contactMessages);
+      const messages = await storage.getAllContactMessages();
+      res.json(messages);
     } catch (error) {
-      res.status(500).json({ message: "Error fetching contact messages", error });
+      console.error("Error fetching contact messages:", error);
+      res.status(500).json({ error: "Failed to fetch contact messages" });
     }
   });
 

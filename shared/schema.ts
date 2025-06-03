@@ -58,6 +58,8 @@ export const contactMessages = pgTable("contact_messages", {
   departureDate: text("departure_date"),
   message: text("message").notNull(),
   enquiryItems: text("enquiry_items"),
+  archived: boolean("archived").default(false),
+  createdAt: text("created_at").notNull(),
 });
 
 export const insertContactMessageSchema = createInsertSchema(contactMessages).pick({
@@ -68,6 +70,8 @@ export const insertContactMessageSchema = createInsertSchema(contactMessages).pi
   departureDate: true,
   message: true,
   enquiryItems: true,
+  archived: true,
+  createdAt: true,
 });
 
 // Delivery rates schema
