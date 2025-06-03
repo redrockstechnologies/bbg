@@ -71,18 +71,18 @@ const DeliveryRates = () => {
   }
 
   return (
-    <section className="mb-16">
+    <section className="mb-16 mt-20">
       <div className="text-center mb-8">
         <h2 className="text-3xl md:text-4xl mb-3 font-medium">Delivery & Collection Rates</h2>
         <div className="w-24 h-1 bg-accent mx-auto mb-6"></div>
         <div className="max-w-4xl mx-auto space-y-4 text-lg">
-          <p className="text-gray-700">
+          <p className="text-primary">
             <strong>Collection is free in Salt Rock, Ballito and must be arranged during your booking.</strong>
           </p>
-          <p className="text-gray-700">
+          <p className="text-primary">
             <strong>Delivery is subject to availability & can be arranged prior to your arrival so that everything is waiting for you at your accommodation.</strong>
           </p>
-          <p className="text-gray-700">
+          <p className="text-primary">
             <strong>Pickup means we will come to collect the items once your stay is over.</strong>
           </p>
         </div>
@@ -95,9 +95,9 @@ const DeliveryRates = () => {
               <h3 className="text-xl mb-4 font-medium text-center">{category}</h3>
               <div className="space-y-3">
                 {categoryRates.map((rate, index) => (
-                  <div key={index} className="flex justify-between items-center">
+                  <div key={index} className="flex justify-between items-center gap-2">
                     <span className="text-sm font-medium">{rate.location}:</span>
-                    <span className="text-lg font-bold text-accent">{rate.rate}</span>
+                    <span className="text-lg font-bold text-primary">{rate.rate}</span>
                   </div>
                 ))}
               </div>
