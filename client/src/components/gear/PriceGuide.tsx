@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
@@ -55,14 +54,14 @@ const PriceGuide = () => {
   if (!priceGuide) return null;
 
   return (
-    <section className="mb-16 mt-20">
+    <section id="price-guide" className="mb-16 mt-20">
       <div className="text-center mb-8">
         <h2 className="text-3xl md:text-4xl mb-3 font-medium">{priceGuide.title}</h2>
         <div className="w-24 h-1 bg-accent mx-auto mb-6"></div>
         <p className="text-primary text-lg max-w-4xl mx-auto mb-8">
           <strong>{priceGuide.subtitle}</strong>
         </p>
-        
+
         {priceGuide.fileUrl && (
           <Button
             onClick={handleDownload}
@@ -72,7 +71,7 @@ const PriceGuide = () => {
             Download Price Guide
           </Button>
         )}
-        
+
         {!priceGuide.fileUrl && (
           <p className="text-gray-500 italic">Price guide will be available soon</p>
         )}

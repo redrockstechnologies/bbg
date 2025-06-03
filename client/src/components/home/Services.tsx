@@ -64,9 +64,9 @@ const Services = () => {
             <p className="mb-5">
               Need nappies, wipes, or other baby essentials delivered right to your doorstep? Our NappyNow service has you covered.
             </p>
-            <Link href="/contact">
+            <Link href="/gear#price-guide">
               <span className="bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full inline-block transition-colors cursor-pointer">
-                Contact Us
+                View in Price Guide
               </span>
             </Link>
           </div>

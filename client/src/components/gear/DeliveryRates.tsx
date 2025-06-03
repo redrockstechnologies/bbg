@@ -96,7 +96,7 @@ const DeliveryRates = () => {
               <div className="space-y-3">
                 {categoryRates.map((rate, index) => (
                   <div key={index} className="flex justify-between items-center gap-2">
-                    <span className="text-sm font-medium">{rate.location}:</span>
+                    <span className="text-lg font-medium">{rate.location}:</span>
                     <span className="text-lg font-bold text-primary">{rate.rate}</span>
                   </div>
                 ))}
