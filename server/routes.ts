@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertGearItemSchema, insertTestimonialSchema, insertContactMessageSchema } from "@shared/schema";
+import { insertUserSchema, insertGearItemSchema, insertTestimonialSchema, insertContactMessageSchema, insertDeliveryRateSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
@@ -188,6 +188,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(contactMessages);
     } catch (error) {
       res.status(500).json({ message: "Error fetching contact messages", error });
+    }
+  });
+
+  // Delivery rates routes
+  app.get("/api/delivery-rates", async (req, res) => {
+    try {
+      const deliveryRates = await storage.getAllDeliveryRates();
+      res.json(deliveryRates);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching delivery rates", error });
+    }
+  });
+
+  app.post("/api/delivery-rates", async (req, res) => {
+    try {
+      const rateData = insertDeliveryRateSchema.parse(req.body);
+      const newRate = await storage.createDeliveryRate(rateData);
+      res.status(201).json(newRate);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid delivery rate data", error });
+    }
+  });
+
+  app.put("/api/delivery-rates/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const rateData = insertDeliveryRateSchema.parse(req.body);
+      const updatedRate = await storage.updateDeliveryRate(id, rateData);
+      if (!updatedRate) {
+        return res.status(404).json({ message: "Delivery rate not found" });
+      }
+      res.json(updatedRate);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid delivery rate data", error });
+    }
+  });
+
+  app.delete("/api/delivery-rates/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteDeliveryRate(id);
+      if (!success) {
+        return res.status(404).json({ message: "Delivery rate not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting delivery rate", error });
     }
   });
 

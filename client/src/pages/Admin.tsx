@@ -5,12 +5,13 @@ import LoginForm from '@/components/admin/LoginForm';
 import GearManagement from '@/components/admin/GearManagement';
 import TestimonialManagement from '@/components/admin/TestimonialManagement';
 import ImagesManagement from '@/components/admin/ImagesManagement';
+import DeliveryRatesManagement from '@/components/admin/DeliveryRatesManagement';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 
 const Admin = () => {
   const { isAuthenticated, logout } = useAuth();
-  const [activeSection, setActiveSection] = useState<'gear' | 'testimonials' | 'images'>('gear');
+  const [activeSection, setActiveSection] = useState<'gear' | 'testimonials' | 'images' | 'delivery'>('gear');
 
   return (
     <>
@@ -64,12 +65,19 @@ const Admin = () => {
               >
                 Images
               </button>
+              <button
+                className={`px-6 py-2 rounded-full font-medium transition-colors ${activeSection === 'delivery' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                onClick={() => setActiveSection('delivery')}
+              >
+                Delivery Rates
+              </button>
             </div>
 
             {/* Section Content */}
             {activeSection === 'gear' && <GearManagement />}
             {activeSection === 'testimonials' && <TestimonialManagement />}
             {activeSection === 'images' && <ImagesManagement />}
+            {activeSection === 'delivery' && <DeliveryRatesManagement />}
           </div>
         )}
       </div>

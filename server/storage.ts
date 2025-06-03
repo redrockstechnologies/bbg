@@ -2,7 +2,7 @@ import {
   users, type User, type InsertUser,
   gearItems, type GearItem, type InsertGearItem,
   testimonials, type Testimonial, type InsertTestimonial,
-  contactMessages, type ContactMessage, type InsertContactMessage
+  contactMessages, type ContactMessage, type InsertContactMessage, deliveryRates, type DeliveryRate, type InsertDeliveryRate
 } from "@shared/schema";
 
 // Interface for storage operations
@@ -11,21 +11,21 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Gear item operations
   getAllGearItems(): Promise<GearItem[]>;
   getGearItem(id: number): Promise<GearItem | undefined>;
   createGearItem(gearItem: InsertGearItem): Promise<GearItem>;
   updateGearItem(id: number, gearItem: InsertGearItem): Promise<GearItem | undefined>;
   deleteGearItem(id: number): Promise<boolean>;
-  
+
   // Testimonial operations
   getAllTestimonials(): Promise<Testimonial[]>;
   getTestimonial(id: number): Promise<Testimonial | undefined>;
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
   updateTestimonial(id: number, testimonial: InsertTestimonial): Promise<Testimonial | undefined>;
   deleteTestimonial(id: number): Promise<boolean>;
-  
+
   // Contact message operations
   getAllContactMessages(): Promise<ContactMessage[]>;
   getContactMessage(id: number): Promise<ContactMessage | undefined>;
@@ -37,7 +37,7 @@ export class MemStorage implements IStorage {
   private gearItems: Map<number, GearItem>;
   private testimonials: Map<number, Testimonial>;
   private contactMessages: Map<number, ContactMessage>;
-  
+
   private userCurrentId: number;
   private gearCurrentId: number;
   private testimonialCurrentId: number;
@@ -48,15 +48,15 @@ export class MemStorage implements IStorage {
     this.gearItems = new Map();
     this.testimonials = new Map();
     this.contactMessages = new Map();
-    
+
     this.userCurrentId = 1;
     this.gearCurrentId = 1;
     this.testimonialCurrentId = 1;
     this.contactMessageCurrentId = 1;
-    
+
     // Initialize with admin user
     this.createUser({ username: "admin", password: "password" });
-    
+
     // Add some default gear items
     this.createGearItem({
       itemType: "Baby Cot",
@@ -65,7 +65,7 @@ export class MemStorage implements IStorage {
       additionalDeets: "Comfortable, sturdy cot with mattress and fitted sheet included. Perfect for babies up to 2 years.",
       imageUrl: "https://images.unsplash.com/photo-1618314085635-340e9b8a6daf?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
     });
-    
+
     this.createGearItem({
       itemType: "Stroller",
       dayCost: "R150",
@@ -73,7 +73,7 @@ export class MemStorage implements IStorage {
       additionalDeets: "Lightweight, easy-fold stroller with sun canopy. Suitable for babies 6 months and older.",
       imageUrl: "https://images.unsplash.com/photo-1591349884490-a6e09f2f4e1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
     });
-    
+
     this.createGearItem({
       itemType: "High Chair",
       dayCost: "R100",
@@ -81,7 +81,7 @@ export class MemStorage implements IStorage {
       additionalDeets: "Easy-clean high chair with adjustable height and removable tray. Suitable for babies who can sit unassisted.",
       imageUrl: "https://pixabay.com/get/g31ccf60c89bd83a410930828c2fe9bdc945c8529b6366a239b381eeb2fe20d1208db7e8a2e6eafade15e7d5cb6b789bc1db39c5fb247e869365c41fb4cf09fa1_1280.jpg"
     });
-    
+
     // Add some default testimonials
     this.createTestimonial({
       name: "Sarah T.",
@@ -89,14 +89,14 @@ export class MemStorage implements IStorage {
       rating: 5,
       text: "Absolute lifesaver! We traveled with our 8-month-old and didn't have to worry about packing any baby gear. Everything was spotless and high quality."
     });
-    
+
     this.createTestimonial({
       name: "Michael R.",
       location: "Cape Town",
       rating: 5,
       text: "The NappyNow service was incredible! We ran out of nappies at 9 PM and they had them delivered within the hour. Cannot recommend enough!"
     });
-    
+
     this.createTestimonial({
       name: "Emma K.",
       location: "Durban",

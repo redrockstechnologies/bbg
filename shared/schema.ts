@@ -70,6 +70,20 @@ export const insertContactMessageSchema = createInsertSchema(contactMessages).pi
   enquiryItems: true,
 });
 
+// Delivery rates schema
+export const deliveryRates = pgTable("delivery_rates", {
+  id: serial("id").primaryKey(),
+  category: text("category").notNull(),
+  location: text("location").notNull(),
+  rate: text("rate").notNull(),
+});
+
+export const insertDeliveryRateSchema = createInsertSchema(deliveryRates).pick({
+  category: true,
+  location: true,
+  rate: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -82,3 +96,6 @@ export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 
 export type ContactMessage = typeof contactMessages.$inferSelect;
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
+
+export type DeliveryRate = typeof deliveryRates.$inferSelect;
+export type InsertDeliveryRate = z.infer<typeof insertDeliveryRateSchema>;
