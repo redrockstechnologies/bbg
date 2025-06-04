@@ -1,8 +1,33 @@
 import { Link } from "wouter";
 import { Phone, Mail, MapPin } from "lucide-react";
 import Logo from "@/components/ui/logo";
+import { useState, useEffect } from "react";
 
 const Footer = () => {
+  const [priceGuideUrl, setPriceGuideUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPriceGuide = async () => {
+      try {
+        const response = await fetch("/api/price-guide");
+        if (response.ok) {
+          const data = await response.json();
+          setPriceGuideUrl(data.fileUrl);
+        }
+      } catch (error) {
+        console.error("Error fetching price guide:", error);
+      }
+    };
+
+    fetchPriceGuide();
+  }, []);
+
+  const handleTermsClick = () => {
+    if (priceGuideUrl) {
+      window.open(priceGuideUrl, '_blank');
+    }
+  };
+
   return (
     <footer className="bg-primary text-white py-8 mt-12">
       <div className="container mx-auto px-4">
@@ -35,7 +60,12 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <span className="hover:text-accent transition-colors cursor-pointer">Terms & Conditions</span>
+                <span 
+                  className="hover:text-accent transition-colors cursor-pointer"
+                  onClick={handleTermsClick}
+                >
+                  Terms & Conditions
+                </span>
               </li>
             </ul>
           </div>
