@@ -12,3 +12,13 @@ export default defineConfig({
     url: process.env.DATABASE_URL,
   },
 });
+import type { Config } from "drizzle-kit";
+
+export default {
+  schema: "./shared/schema.ts",
+  out: "./migrations",
+  dialect: "postgresql",
+  dbCredentials: {
+    url: process.env.DATABASE_URL || "postgresql://localhost:5432/ballito_baby_gear"
+  }
+} satisfies Config;

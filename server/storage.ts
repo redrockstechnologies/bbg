@@ -168,14 +168,24 @@ export class DatabaseStorage implements IStorage {
 
   async createOrUpdatePriceGuide(insertPriceGuide: InsertPriceGuide): Promise<PriceGuide> {
     const existing = await this.getPriceGuide();
+    const now = new Date().toISOString();
 
     if (existing) {
       // Update existing
-      const result = await db.update(priceGuides).set(insertPriceGuide).where(eq(priceGuides.id, existing.id)).returning();
+      const updateData = {
+        ...insertPriceGuide,
+        updatedAt: now
+      };
+      const result = await db.update(priceGuides).set(updateData).where(eq(priceGuides.id, existing.id)).returning();
       return result[0];
     } else {
       // Create new
-      const result = await db.insert(priceGuides).values(insertPriceGuide).returning();
+      const createData = {
+        ...insertPriceGuide,
+        createdAt: now,
+        updatedAt: now
+      };
+      const result = await db.insert(priceGuides).values(createData).returning();
       return result[0];
     }
   }
