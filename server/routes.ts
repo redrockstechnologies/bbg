@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { insertUserSchema, insertGearItemSchema, insertTestimonialSchema, insertContactMessageSchema, insertDeliveryRateSchema } from "@shared/schema";
 import priceGuideRoutes from "./priceGuide";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
 
   // Use the price guide routes from priceGuide.ts
@@ -268,3 +268,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   return httpServer;
 }
+
+export default registerRoutes;
