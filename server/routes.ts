@@ -1,10 +1,10 @@
 
 import express, { type Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { registerVite } from "./vite";
-import { db } from "@/server/db";
-import * as schema from "@/shared/schema";
-import { insertGearItemSchema, insertContactMessageSchema, insertDeliveryRateSchema, insertTestimonialSchema } from "@/shared/schema";
+// registerVite is handled in index.ts
+import { db } from "./db";
+import * as schema from "../shared/schema";
+import { insertGearItemSchema, insertContactMessageSchema, insertDeliveryRateSchema, insertTestimonialSchema } from "../shared/schema";
 import multer from 'multer';
 import { Client } from '@replit/object-storage';
 
@@ -25,12 +25,8 @@ const upload = multer({
   },
 });
 
-export function createExpressApp(): Server {
-  const app = express();
-  app.use(express.json());
+export function registerRoutes(app: express.Express): Server {
   app.use(express.static("public"));
-
-  registerVite(app);
 
   // Gear Items Routes
   app.get("/api/gear", async (req, res) => {
