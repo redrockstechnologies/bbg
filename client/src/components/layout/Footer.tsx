@@ -1,25 +1,19 @@
 
 import { useState, useEffect } from "react";
-import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from "@/lib/firebase";
 
 const Footer = () => {
-  const [priceGuideUrl, setPriceGuideUrl] = useState<string | null>(null);
+  const [priceGuideExists, setPriceGuideExists] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchPriceGuide = async () => {
       try {
-        // Try to get the metadata file from Firebase Storage
-        const metadataRef = ref(storage, 'price-guide/metadata.json');
-        const metadataUrl = await getDownloadURL(metadataRef);
-        const response = await fetch(metadataUrl);
-        
+        const response = await fetch('/api/price-guide');
         if (response.ok) {
           const data = await response.json();
-          setPriceGuideUrl(data.fileUrl);
+          setPriceGuideExists(data.exists);
         }
       } catch (error) {
-        console.log("No price guide found or error fetching:", error);
+        console.log("Error fetching price guide:", error);
       }
     };
 
@@ -27,8 +21,8 @@ const Footer = () => {
   }, []);
 
   const handleTermsClick = () => {
-    if (priceGuideUrl) {
-      window.open(priceGuideUrl, '_blank');
+    if (priceGuideExists) {
+      window.open('/api/price-guide/download', '_blank');
     }
   };
 
@@ -49,43 +43,40 @@ const Footer = () => {
               Making family holidays stress-free with quality baby gear rentals in Ballito and surrounding areas.
             </p>
           </div>
-
+          
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold mb-4">Quick Links</h3>
+            <h3 className="text-lg font-medium mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><a href="#home" className="text-gray-300 hover:text-white transition-colors">Home</a></li>
-              <li><a href="#about" className="text-gray-300 hover:text-white transition-colors">About</a></li>
-              <li><a href="#gear" className="text-gray-300 hover:text-white transition-colors">Our Gear</a></li>
-              <li><a href="#contact" className="text-gray-300 hover:text-white transition-colors">Contact</a></li>
+              <li><a href="/" className="text-gray-300 hover:text-white transition-colors">Home</a></li>
+              <li><a href="/gear" className="text-gray-300 hover:text-white transition-colors">Our Gear</a></li>
+              <li><a href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</a></li>
+              {priceGuideExists && (
+                <li>
+                  <button 
+                    onClick={handleTermsClick}
+                    className="text-gray-300 hover:text-white transition-colors text-left"
+                  >
+                    Price Guide
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
-
+          
           {/* Contact Info */}
           <div>
-            <h3 className="font-semibold mb-4">Contact Info</h3>
-            <ul className="space-y-2 text-gray-300">
-              <li>+27 72 125 7824</li>
-              <li>hello@ballitobabygear.co.za</li>
-              <li>Ballito, KwaZulu-Natal</li>
-            </ul>
+            <h3 className="text-lg font-medium mb-4">Contact Info</h3>
+            <div className="space-y-2 text-gray-300">
+              <p>+27 72 125 7824</p>
+              <p>hello@ballitobabygear.co.za</p>
+              <p>Ballito & surrounding areas</p>
+            </div>
           </div>
         </div>
-
-        <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-300 text-sm">
-            © 2024 Ballito Baby Gear. All rights reserved.
-          </p>
-          <div className="flex space-x-4 mt-4 md:mt-0">
-            {priceGuideUrl && (
-              <button 
-                onClick={handleTermsClick}
-                className="text-gray-300 hover:text-white text-sm transition-colors"
-              >
-                Terms & Conditions
-              </button>
-            )}
-          </div>
+        
+        <div className="border-t border-gray-600 mt-8 pt-8 text-center text-gray-300">
+          <p>&copy; 2024 Ballito Baby Gear. All rights reserved.</p>
         </div>
       </div>
     </footer>

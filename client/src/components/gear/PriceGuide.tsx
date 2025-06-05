@@ -1,16 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from "@/lib/firebase";
 
 type PriceGuide = {
   title: string;
   subtitle: string;
-  fileUrl?: string;
-  fileName?: string;
-  uploadedAt?: string;
+  exists: boolean;
 };
 
 const PriceGuide = () => {
@@ -20,18 +15,13 @@ const PriceGuide = () => {
   useEffect(() => {
     const fetchPriceGuide = async () => {
       try {
-        // Try to get the metadata file from Firebase Storage
-        const metadataRef = ref(storage, 'price-guide/metadata.json');
-        const metadataUrl = await getDownloadURL(metadataRef);
-        const response = await fetch(metadataUrl);
-        
+        const response = await fetch('/api/price-guide');
         if (response.ok) {
           const data = await response.json();
           setPriceGuide(data);
         }
       } catch (error) {
-        console.log("No price guide found or error fetching:", error);
-        // This is expected if no price guide exists yet
+        console.log("Error fetching price guide:", error);
       } finally {
         setLoading(false);
       }
@@ -41,9 +31,7 @@ const PriceGuide = () => {
   }, []);
 
   const handleDownload = () => {
-    if (priceGuide?.fileUrl) {
-      window.open(priceGuide.fileUrl, '_blank');
-    }
+    window.open('/api/price-guide/download', '_blank');
   };
 
   if (loading) {
@@ -59,7 +47,7 @@ const PriceGuide = () => {
     );
   }
 
-  if (!priceGuide) {
+  if (!priceGuide || !priceGuide.exists) {
     return (
       <section id="price-guide" className="mb-16 mt-20">
         <div className="text-center mb-8">
@@ -83,17 +71,13 @@ const PriceGuide = () => {
           <strong>{priceGuide.subtitle}</strong>
         </p>
 
-        {priceGuide.fileUrl ? (
-          <Button
-            onClick={handleDownload}
-            className="bg-accent hover:bg-accent/90 text-white px-8 py-3 rounded-full text-lg font-medium transition-colors flex items-center mx-auto"
-          >
-            <Download size={20} className="mr-2" />
-            Download Price Guide
-          </Button>
-        ) : (
-          <p className="text-gray-500 italic">Price guide PDF will be available soon</p>
-        )}
+        <Button
+          onClick={handleDownload}
+          className="bg-accent hover:bg-accent/90 text-white px-8 py-3 rounded-full text-lg font-medium transition-colors flex items-center mx-auto"
+        >
+          <Download size={20} className="mr-2" />
+          Download Price Guide
+        </Button>
       </div>
     </section>
   );

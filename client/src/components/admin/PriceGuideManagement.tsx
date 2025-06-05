@@ -3,8 +3,6 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { storage } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 
 import {
@@ -16,11 +14,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trash2, Upload, Download, FileText } from "lucide-react";
 
-// Schema for price guide
 const priceGuideSchema = z.object({
   title: z.string().min(1, "Title is required"),
   subtitle: z.string().min(1, "Subtitle is required"),
@@ -28,10 +25,13 @@ const priceGuideSchema = z.object({
 
 type PriceGuideFormValues = z.infer<typeof priceGuideSchema>;
 
-type PriceGuide = PriceGuideFormValues & {
-  fileUrl?: string;
-  fileName?: string;
-  uploadedAt?: string;
+type PriceGuide = {
+  title: string;
+  subtitle: string;
+  fileName: string;
+  uploadedAt: string;
+  fileSize: number;
+  exists: boolean;
 };
 
 const PriceGuideManagement = () => {
@@ -67,137 +67,139 @@ const PriceGuideManagement = () => {
     }
   }, [priceGuide, form]);
   
-  // Fetch price guide from Firebase Storage
+  // Fetch price guide from backend
   const fetchPriceGuide = async () => {
     try {
-      // Try to get the metadata file from Firebase Storage
-      const metadataRef = ref(storage, 'price-guide/metadata.json');
-      const metadataUrl = await getDownloadURL(metadataRef);
-      const response = await fetch(metadataUrl);
-      
+      const response = await fetch('/api/price-guide');
       if (response.ok) {
         const data = await response.json();
-        setPriceGuide(data);
+        if (data.exists) {
+          setPriceGuide(data);
+        } else {
+          setPriceGuide(null);
+        }
       }
     } catch (error) {
-      console.log("No existing price guide found or error fetching:", error);
-      // This is expected if no price guide exists yet
+      console.error("Error fetching price guide:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch price guide",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
   
-  // Handle file change
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (file.type === "application/pdf") {
-        setFileUpload(file);
-      } else {
+  // Handle file selection
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
         toast({
-          title: "Invalid File",
+          title: "Invalid file type",
           description: "Please select a PDF file",
           variant: "destructive",
         });
+        return;
       }
+      
+      if (file.size > 10 * 1024 * 1024) { // 10MB
+        toast({
+          title: "File too large",
+          description: "File size must be less than 10MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setFileUpload(file);
     }
   };
   
-  // Handle form submission
+  // Submit form
   const onSubmit = async (data: PriceGuideFormValues) => {
+    if (!fileUpload && !priceGuide) {
+      toast({
+        title: "PDF Required",
+        description: "Please select a PDF file to upload",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      let fileUrl = priceGuide?.fileUrl || "";
-      let fileName = priceGuide?.fileName || "";
+      const formData = new FormData();
+      formData.append('title', data.title);
+      formData.append('subtitle', data.subtitle);
       
-      // Upload PDF if selected
       if (fileUpload) {
-        // Delete old file if it exists
-        if (priceGuide?.fileUrl) {
-          try {
-            const oldFileRef = ref(storage, `price-guide/${priceGuide.fileName}`);
-            await deleteObject(oldFileRef);
-          } catch (error) {
-            console.log("Could not delete old file:", error);
-          }
-        }
-        
-        // Upload new file
-        const timestamp = Date.now();
-        const newFileName = `${timestamp}_${fileUpload.name}`;
-        const storageRef = ref(storage, `price-guide/${newFileName}`);
-        const uploadResult = await uploadBytes(storageRef, fileUpload);
-        fileUrl = await getDownloadURL(uploadResult.ref);
-        fileName = newFileName;
+        formData.append('pdf', fileUpload);
       }
       
-      // Create metadata object
-      const priceGuideData: PriceGuide = {
-        title: data.title,
-        subtitle: data.subtitle,
-        fileUrl,
-        fileName,
-        uploadedAt: new Date().toISOString(),
-      };
-      
-      // Save metadata to Firebase Storage
-      const metadataBlob = new Blob([JSON.stringify(priceGuideData, null, 2)], {
-        type: 'application/json'
+      const response = await fetch('/api/price-guide', {
+        method: 'POST',
+        body: formData,
       });
-      const metadataRef = ref(storage, 'price-guide/metadata.json');
-      await uploadBytes(metadataRef, metadataBlob);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save price guide');
+      }
+      
+      const result = await response.json();
+      
+      // Update local state
+      setPriceGuide({
+        ...result.metadata,
+        exists: true,
+      });
+      
+      // Reset file input
+      setFileUpload(null);
+      const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
       
       toast({
         title: "Success",
-        description: "Price guide updated successfully",
+        description: priceGuide ? "Price guide updated successfully" : "Price guide created successfully",
       });
       
-      setFileUpload(null);
-      setPriceGuide(priceGuideData);
     } catch (error) {
       console.error("Error saving price guide:", error);
       toast({
         title: "Error",
-        description: "Failed to save price guide. Please check your Firebase configuration.",
+        description: error instanceof Error ? error.message : "Failed to save price guide",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const handleDownload = () => {
-    if (priceGuide?.fileUrl) {
-      window.open(priceGuide.fileUrl, '_blank');
-    }
-  };
-
+  
+  // Delete price guide
   const handleDelete = async () => {
-    if (!priceGuide?.fileUrl) return;
-    
     setIsDeleting(true);
+    
     try {
-      // Delete PDF file
-      if (priceGuide.fileName) {
-        const fileRef = ref(storage, `price-guide/${priceGuide.fileName}`);
-        await deleteObject(fileRef);
+      const response = await fetch('/api/price-guide', {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete price guide');
       }
       
-      // Delete metadata file
-      const metadataRef = ref(storage, 'price-guide/metadata.json');
-      await deleteObject(metadataRef);
-      
       setPriceGuide(null);
-      form.reset({
-        title: "",
-        subtitle: "",
-      });
+      form.reset();
       
       toast({
         title: "Success",
         description: "Price guide deleted successfully",
       });
+      
     } catch (error) {
       console.error("Error deleting price guide:", error);
       toast({
@@ -210,120 +212,157 @@ const PriceGuideManagement = () => {
     }
   };
   
+  // Download PDF
+  const handleDownload = () => {
+    window.open('/api/price-guide/download', '_blank');
+  };
+  
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+  
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Price Guide Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl">Manage Price Guide</h3>
-        <div className="flex space-x-2">
-          {priceGuide?.fileUrl && (
-            <>
-              <Button 
-                onClick={handleDownload}
-                className="bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-full transition-colors flex items-center"
-              >
-                <Download size={16} className="mr-1" /> Download Current
-              </Button>
-              <Button 
-                onClick={handleDelete}
-                disabled={isDeleting}
-                variant="destructive"
-                className="py-2 px-4 rounded-full transition-colors flex items-center"
-              >
-                <Trash2 size={16} className="mr-1" /> 
-                {isDeleting ? "Deleting..." : "Delete"}
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-      
-      {loading ? (
-        <div className="text-center py-8">Loading...</div>
-      ) : (
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="subtitle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subtitle</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        {...field} 
-                        rows={3} 
-                        className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="mb-6">
-                <label className="block mb-2 font-medium">Price Guide PDF</label>
-                <Input
+    <Card>
+      <CardHeader>
+        <CardTitle>Price Guide Management</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        
+        {/* Current Price Guide Display */}
+        {priceGuide && (
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-medium mb-2">Current Price Guide</h3>
+            <div className="space-y-2 text-sm">
+              <p><strong>Title:</strong> {priceGuide.title}</p>
+              <p><strong>Subtitle:</strong> {priceGuide.subtitle}</p>
+              <p><strong>File:</strong> {priceGuide.fileName}</p>
+              <p><strong>Size:</strong> {formatFileSize(priceGuide.fileSize)}</p>
+              <p><strong>Uploaded:</strong> {new Date(priceGuide.uploadedAt).toLocaleDateString()}</p>
+              <div className="flex gap-2 mt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownload}
+                  className="flex items-center gap-2"
+                >
+                  <Download size={16} />
+                  Download
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 size={16} />
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Form */}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="e.g., Price Guide"
+                      className="w-full"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="subtitle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Subtitle</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="e.g., Download our comprehensive pricing information"
+                      className="w-full"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {/* File Upload */}
+            <div className="space-y-2">
+              <label htmlFor="pdf-upload" className="block text-sm font-medium">
+                PDF File {!priceGuide && <span className="text-red-500">*</span>}
+              </label>
+              <div className="flex items-center gap-4">
+                <input
+                  id="pdf-upload"
                   type="file"
                   accept=".pdf"
                   onChange={handleFileChange}
-                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+                  className="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-primary/90"
                 />
-                {priceGuide?.fileName && (
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      Current file: {priceGuide.fileName}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      Uploaded: {priceGuide.uploadedAt ? new Date(priceGuide.uploadedAt).toLocaleDateString() : 'Unknown'}
-                    </p>
-                  </div>
-                )}
                 {fileUpload && (
-                  <div className="mt-2">
-                    <p className="text-sm text-green-600">
-                      New file selected: {fileUpload.name}
-                    </p>
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <FileText size={16} />
+                    {fileUpload.name}
                   </div>
                 )}
               </div>
-              
-              <div className="flex space-x-4">
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full transition-colors flex items-center"
-                >
-                  {isSubmitting ? "Saving..." : (
-                    <>
-                      <Upload size={16} className="mr-1" />
-                      Save Price Guide
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </div>
-      )}
-    </div>
+              {!priceGuide && (
+                <p className="text-xs text-gray-500">Maximum file size: 10MB</p>
+              )}
+            </div>
+            
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full flex items-center gap-2"
+            >
+              <Upload size={16} />
+              {isSubmitting ? "Saving..." : priceGuide ? "Update Price Guide" : "Create Price Guide"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 };
 
