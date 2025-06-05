@@ -146,7 +146,7 @@ const ContactForm = () => {
                   <Input 
                     type="tel" 
                     {...field} 
-                    placeholder="+27 82 467 1910"
+                    placeholder="+27 82 555 5555"
                     className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
                   />
                 </FormControl>
