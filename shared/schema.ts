@@ -124,3 +124,70 @@ export type InsertDeliveryRate = z.infer<typeof insertDeliveryRateSchema>;
 
 export type PriceGuide = typeof priceGuides.$inferSelect;
 export type InsertPriceGuide = z.infer<typeof insertPriceGuideSchema>;
+
+// Admin users schema
+export const adminUsers = pgTable("admin_users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  company: text("company"),
+  roleId: integer("role_id").references(() => roles.id),
+  isActive: boolean("is_active").default(true),
+  hasPassword: boolean("has_password").default(false),
+  createdAt: text("created_at").notNull(),
+});
+
+export const insertAdminUserSchema = createInsertSchema(adminUsers).pick({
+  email: true,
+  firstName: true,
+  lastName: true,
+  company: true,
+  roleId: true,
+  isActive: true,
+  hasPassword: true,
+  createdAt: true,
+});
+
+// Roles schema
+export const roles = pgTable("roles", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  permissions: text("permissions").notNull(), // JSON string of permissions array
+  createdAt: text("created_at").notNull(),
+});
+
+export const insertRoleSchema = createInsertSchema(roles).pick({
+  name: true,
+  description: true,
+  permissions: true,
+  createdAt: true,
+});
+
+// Website images schema for settings
+export const websiteImages = pgTable("website_images", {
+  id: serial("id").primaryKey(),
+  section: text("section").notNull(), // 'hero', 'about', 'footer', etc.
+  imageUrl: text("image_url").notNull(),
+  altText: text("alt_text"),
+  isActive: boolean("is_active").default(true),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const insertWebsiteImageSchema = createInsertSchema(websiteImages).pick({
+  section: true,
+  imageUrl: true,
+  altText: true,
+  isActive: true,
+  updatedAt: true,
+});
+
+export type AdminUser = typeof adminUsers.$inferSelect;
+export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
+
+export type Role = typeof roles.$inferSelect;
+export type InsertRole = z.infer<typeof insertRoleSchema>;
+
+export type WebsiteImage = typeof websiteImages.$inferSelect;
+export type InsertWebsiteImage = z.infer<typeof insertWebsiteImageSchema>;
