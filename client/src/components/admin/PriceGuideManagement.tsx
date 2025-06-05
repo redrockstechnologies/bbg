@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { storage } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Download, Upload } from "lucide-react";
+import { Download, Upload, Trash2 } from "lucide-react";
 
 // Schema for price guide
 const priceGuideSchema = z.object({
@@ -29,9 +29,9 @@ const priceGuideSchema = z.object({
 type PriceGuideFormValues = z.infer<typeof priceGuideSchema>;
 
 type PriceGuide = PriceGuideFormValues & {
-  id: number;
   fileUrl?: string;
   fileName?: string;
+  uploadedAt?: string;
 };
 
 const PriceGuideManagement = () => {
@@ -39,6 +39,7 @@ const PriceGuideManagement = () => {
   const [loading, setLoading] = useState(true);
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const { toast } = useToast();
   
@@ -66,22 +67,22 @@ const PriceGuideManagement = () => {
     }
   }, [priceGuide, form]);
   
-  // Fetch price guide from API
+  // Fetch price guide from Firebase Storage
   const fetchPriceGuide = async () => {
     try {
-      const response = await fetch("/api/price-guide");
+      // Try to get the metadata file from Firebase Storage
+      const metadataRef = ref(storage, 'price-guide/metadata.json');
+      const metadataUrl = await getDownloadURL(metadataRef);
+      const response = await fetch(metadataUrl);
+      
       if (response.ok) {
         const data = await response.json();
         setPriceGuide(data);
       }
-      setLoading(false);
     } catch (error) {
-      console.error("Error fetching price guide:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load price guide",
-        variant: "destructive",
-      });
+      console.log("No existing price guide found or error fetching:", error);
+      // This is expected if no price guide exists yet
+    } finally {
       setLoading(false);
     }
   };
@@ -112,41 +113,53 @@ const PriceGuideManagement = () => {
       
       // Upload PDF if selected
       if (fileUpload) {
-        const storageRef = ref(storage, `price-guides/${Date.now()}_${fileUpload.name}`);
+        // Delete old file if it exists
+        if (priceGuide?.fileUrl) {
+          try {
+            const oldFileRef = ref(storage, `price-guide/${priceGuide.fileName}`);
+            await deleteObject(oldFileRef);
+          } catch (error) {
+            console.log("Could not delete old file:", error);
+          }
+        }
+        
+        // Upload new file
+        const timestamp = Date.now();
+        const newFileName = `${timestamp}_${fileUpload.name}`;
+        const storageRef = ref(storage, `price-guide/${newFileName}`);
         const uploadResult = await uploadBytes(storageRef, fileUpload);
         fileUrl = await getDownloadURL(uploadResult.ref);
-        fileName = fileUpload.name;
+        fileName = newFileName;
       }
       
-      const method = priceGuide ? "PUT" : "POST";
-      const response = await fetch("/api/price-guide", {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...data,
-          fileUrl,
-          fileName,
-        }),
+      // Create metadata object
+      const priceGuideData: PriceGuide = {
+        title: data.title,
+        subtitle: data.subtitle,
+        fileUrl,
+        fileName,
+        uploadedAt: new Date().toISOString(),
+      };
+      
+      // Save metadata to Firebase Storage
+      const metadataBlob = new Blob([JSON.stringify(priceGuideData, null, 2)], {
+        type: 'application/json'
+      });
+      const metadataRef = ref(storage, 'price-guide/metadata.json');
+      await uploadBytes(metadataRef, metadataBlob);
+      
+      toast({
+        title: "Success",
+        description: "Price guide updated successfully",
       });
       
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Price guide updated successfully",
-        });
-        
-        setFileUpload(null);
-        fetchPriceGuide();
-      } else {
-        throw new Error("Failed to save price guide");
-      }
+      setFileUpload(null);
+      setPriceGuide(priceGuideData);
     } catch (error) {
       console.error("Error saving price guide:", error);
       toast({
         title: "Error",
-        description: "Failed to save price guide",
+        description: "Failed to save price guide. Please check your Firebase configuration.",
         variant: "destructive",
       });
     } finally {
@@ -159,19 +172,69 @@ const PriceGuideManagement = () => {
       window.open(priceGuide.fileUrl, '_blank');
     }
   };
+
+  const handleDelete = async () => {
+    if (!priceGuide?.fileUrl) return;
+    
+    setIsDeleting(true);
+    try {
+      // Delete PDF file
+      if (priceGuide.fileName) {
+        const fileRef = ref(storage, `price-guide/${priceGuide.fileName}`);
+        await deleteObject(fileRef);
+      }
+      
+      // Delete metadata file
+      const metadataRef = ref(storage, 'price-guide/metadata.json');
+      await deleteObject(metadataRef);
+      
+      setPriceGuide(null);
+      form.reset({
+        title: "",
+        subtitle: "",
+      });
+      
+      toast({
+        title: "Success",
+        description: "Price guide deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting price guide:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete price guide",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl">Manage Price Guide</h3>
-        {priceGuide?.fileUrl && (
-          <Button 
-            onClick={handleDownload}
-            className="bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-full transition-colors flex items-center"
-          >
-            <Download size={16} className="mr-1" /> Download Current
-          </Button>
-        )}
+        <div className="flex space-x-2">
+          {priceGuide?.fileUrl && (
+            <>
+              <Button 
+                onClick={handleDownload}
+                className="bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-full transition-colors flex items-center"
+              >
+                <Download size={16} className="mr-1" /> Download Current
+              </Button>
+              <Button 
+                onClick={handleDelete}
+                disabled={isDeleting}
+                variant="destructive"
+                className="py-2 px-4 rounded-full transition-colors flex items-center"
+              >
+                <Trash2 size={16} className="mr-1" /> 
+                {isDeleting ? "Deleting..." : "Delete"}
+              </Button>
+            </>
+          )}
+        </div>
       </div>
       
       {loading ? (
@@ -227,6 +290,16 @@ const PriceGuideManagement = () => {
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
                       Current file: {priceGuide.fileName}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Uploaded: {priceGuide.uploadedAt ? new Date(priceGuide.uploadedAt).toLocaleDateString() : 'Unknown'}
+                    </p>
+                  </div>
+                )}
+                {fileUpload && (
+                  <div className="mt-2">
+                    <p className="text-sm text-green-600">
+                      New file selected: {fileUpload.name}
                     </p>
                   </div>
                 )}
