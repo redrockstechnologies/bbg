@@ -1,104 +1,144 @@
-import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Upload, FileText, Trash2 } from "lucide-react";
 
-interface PriceGuide {
-  id?: number;
-  title: string;
-  subtitle: string;
-  fileUrl: string;
-  fileName: string;
-}
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Download, Upload } from "lucide-react";
+
+// Schema for price guide
+const priceGuideSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  subtitle: z.string().min(1, "Subtitle is required"),
+});
+
+type PriceGuideFormValues = z.infer<typeof priceGuideSchema>;
+
+type PriceGuide = PriceGuideFormValues & {
+  id: number;
+  fileUrl?: string;
+  fileName?: string;
+};
 
 const PriceGuideManagement = () => {
-  const [priceGuide, setPriceGuide] = useState<PriceGuide>({
-    title: "",
-    subtitle: "",
-    fileUrl: "",
-    fileName: ""
-  });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [priceGuide, setPriceGuide] = useState<PriceGuide | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [fileUpload, setFileUpload] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const { toast } = useToast();
-
+  
+  // Form setup
+  const form = useForm<PriceGuideFormValues>({
+    resolver: zodResolver(priceGuideSchema),
+    defaultValues: {
+      title: "",
+      subtitle: "",
+    },
+  });
+  
+  // Fetch price guide on mount
   useEffect(() => {
     fetchPriceGuide();
   }, []);
-
+  
+  // Reset form when price guide changes
+  useEffect(() => {
+    if (priceGuide) {
+      form.reset({
+        title: priceGuide.title,
+        subtitle: priceGuide.subtitle,
+      });
+    }
+  }, [priceGuide, form]);
+  
+  // Fetch price guide from API
   const fetchPriceGuide = async () => {
-    setIsLoading(true);
     try {
       const response = await fetch("/api/price-guide");
       if (response.ok) {
         const data = await response.json();
-        if (data) {
-          setPriceGuide(data);
-        }
+        setPriceGuide(data);
       }
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching price guide:", error);
-    } finally {
-      setIsLoading(false);
+      toast({
+        title: "Error",
+        description: "Failed to load price guide",
+        variant: "destructive",
+      });
+      setLoading(false);
     }
   };
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.type === "application/pdf" || file.type.startsWith("image/")) {
-        setSelectedFile(file);
+  
+  // Handle file change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.type === "application/pdf") {
+        setFileUpload(file);
       } else {
         toast({
-          title: "Invalid file type",
-          description: "Please select a PDF or image file",
-          variant: "destructive"
+          title: "Invalid File",
+          description: "Please select a PDF file",
+          variant: "destructive",
         });
       }
     }
   };
-
-  const handleSave = async () => {
-    if (!priceGuide.title.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter a title",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsSaving(true);
+  
+  // Handle form submission
+  const onSubmit = async (data: PriceGuideFormValues) => {
+    setIsSubmitting(true);
+    
     try {
-      // For now, just save the text content without file upload
-      const priceGuideData = {
-        title: priceGuide.title,
-        subtitle: priceGuide.subtitle,
-        fileUrl: priceGuide.fileUrl || "",
-        fileName: selectedFile?.name || priceGuide.fileName || ""
-      };
-
+      let fileUrl = priceGuide?.fileUrl || "";
+      let fileName = priceGuide?.fileName || "";
+      
+      // Upload PDF if selected
+      if (fileUpload) {
+        const storageRef = ref(storage, `price-guides/${Date.now()}_${fileUpload.name}`);
+        const uploadResult = await uploadBytes(storageRef, fileUpload);
+        fileUrl = await getDownloadURL(uploadResult.ref);
+        fileName = fileUpload.name;
+      }
+      
+      const method = priceGuide ? "PUT" : "POST";
       const response = await fetch("/api/price-guide", {
-        method: priceGuide.id ? "PUT" : "POST",
+        method,
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(priceGuideData)
+        body: JSON.stringify({
+          ...data,
+          fileUrl,
+          fileName,
+        }),
       });
-
+      
       if (response.ok) {
-        const savedGuide = await response.json();
-        setPriceGuide(savedGuide);
-        setSelectedFile(null);
         toast({
           title: "Success",
-          description: "Price guide saved successfully"
+          description: "Price guide updated successfully",
         });
+        
+        setFileUpload(null);
+        fetchPriceGuide();
       } else {
         throw new Error("Failed to save price guide");
       }
@@ -107,136 +147,109 @@ const PriceGuideManagement = () => {
       toast({
         title: "Error",
         description: "Failed to save price guide",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
-      setIsSaving(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleRemoveFile = () => {
-    setSelectedFile(null);
-    setPriceGuide(prev => ({
-      ...prev,
-      fileUrl: "",
-      fileName: ""
-    }));
+  const handleDownload = () => {
+    if (priceGuide?.fileUrl) {
+      window.open(priceGuide.fileUrl, '_blank');
+    }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-      </div>
-    );
-  }
-
+  
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-2">Price Guide Management</h2>
-        <p className="text-gray-600">Manage your downloadable price guide</p>
+    <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl">Manage Price Guide</h3>
+        {priceGuide?.fileUrl && (
+          <Button 
+            onClick={handleDownload}
+            className="bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-full transition-colors flex items-center"
+          >
+            <Download size={16} className="mr-1" /> Download Current
+          </Button>
+        )}
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Price Guide Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={priceGuide.title}
-              onChange={(e) => setPriceGuide(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="Enter price guide title"
-              className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="subtitle">Subtitle</Label>
-            <Textarea
-              id="subtitle"
-              value={priceGuide.subtitle}
-              onChange={(e) => setPriceGuide(prev => ({ ...prev, subtitle: e.target.value }))}
-              placeholder="Enter price guide subtitle/description"
-              rows={3}
-              className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none"
-            />
-          </div>
-
-          <div className="space-y-4">
-            <Label>Price Guide File</Label>
-
-            {/* Current file display */}
-            {priceGuide.fileName && !selectedFile && (
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-                <div className="flex items-center">
-                  <FileText className="h-5 w-5 text-gray-500 mr-2" />
-                  <span className="text-sm font-medium">{priceGuide.fileName}</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRemoveFile}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-
-            {/* Selected file display */}
-            {selectedFile && (
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="flex items-center">
-                  <FileText className="h-5 w-5 text-blue-500 mr-2" />
-                  <span className="text-sm font-medium text-blue-700">{selectedFile.name}</span>
-                  <span className="text-xs text-blue-500 ml-2">(New)</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedFile(null)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-
-            {/* File upload */}
-            <div className="flex items-center justify-center w-full">
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-8 h-8 mb-4 text-gray-500" />
-                  <p className="mb-2 text-sm text-gray-500">
-                    <span className="font-semibold">Click to upload</span> or drag and drop
-                  </p>
-                  <p className="text-xs text-gray-500">PDF or image files only</p>
-                </div>
-                <input
+      
+      {loading ? (
+        <div className="text-center py-8">Loading...</div>
+      ) : (
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="subtitle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subtitle</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        rows={3} 
+                        className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="mb-6">
+                <label className="block mb-2 font-medium">Price Guide PDF</label>
+                <Input
                   type="file"
-                  className="hidden"
-                  accept=".pdf,image/*"
-                  onChange={handleFileSelect}
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none"
                 />
-              </label>
-            </div>
-          </div>
-
-          <div className="flex justify-end">
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-lg transition-colors"
-            >
-              {isSaving ? "Saving..." : "Save Price Guide"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+                {priceGuide?.fileName && (
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Current file: {priceGuide.fileName}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex space-x-4">
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full transition-colors flex items-center"
+                >
+                  {isSubmitting ? "Saving..." : (
+                    <>
+                      <Upload size={16} className="mr-1" />
+                      Save Price Guide
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
+      )}
     </div>
   );
 };
