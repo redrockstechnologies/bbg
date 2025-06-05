@@ -1,15 +1,11 @@
-
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { z } from "zod";
 import { storage } from "./storage";
-import { insertUserSchema, insertGearItemSchema, insertTestimonialSchema, insertContactMessageSchema, insertDeliveryRateSchema } from "@shared/schema";
-import priceGuideRoutes from "./priceGuide";
+import { insertUserSchema, insertGearItemSchema, insertTestimonialSchema, insertContactMessageSchema, insertDeliveryRateSchema, insertPriceGuideSchema } from "@shared/schema";
 
-async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
-
-  // Use the price guide routes from priceGuide.ts
-  app.use(priceGuideRoutes);
 
   // User routes
   app.post("/api/users", async (req, res) => {
@@ -188,7 +184,11 @@ async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(message);
     } catch (error) {
       console.error("Error creating contact message:", error);
-      res.status(500).json({ error: "Failed to create contact message" });
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create contact message" });
+      }
     }
   });
 
@@ -264,9 +264,37 @@ async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Price guide routes
+  app.get("/api/price-guide", async (req, res) => {
+    try {
+      const priceGuide = await storage.getPriceGuide();
+      res.json(priceGuide);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching price guide", error });
+    }
+  });
+
+  app.post("/api/price-guide", async (req, res) => {
+    try {
+      const priceGuideData = insertPriceGuideSchema.parse(req.body);
+      const newPriceGuide = await storage.createOrUpdatePriceGuide(priceGuideData);
+      res.status(201).json(newPriceGuide);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid price guide data", error });
+    }
+  });
+
+  app.put("/api/price-guide", async (req, res) => {
+    try {
+      const priceGuideData = insertPriceGuideSchema.parse(req.body);
+      const updatedPriceGuide = await storage.createOrUpdatePriceGuide(priceGuideData);
+      res.json(updatedPriceGuide);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid price guide data", error });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
 }
-
-export default registerRoutes;

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import LoginForm from "@/components/admin/LoginForm";
 import GearManagement from "@/components/admin/GearManagement";
@@ -9,107 +10,91 @@ import PriceGuideManagement from "@/components/admin/PriceGuideManagement";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { Helmet } from 'react-helmet';
-import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
 
 const Admin = () => {
-  const { isAuthenticated, logout } = useAuth();
-  const [openSections, setOpenSections] = useState({
-    products: false,
-    priceGuide: false,
-  });
-
-  const toggleSection = (section: keyof typeof openSections) => {
-    setOpenSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
+  const { isAuthenticated } = useAuth();
+  const [productSectionOpen, setProductSectionOpen] = useState(true);
+  const [priceGuideSectionOpen, setPriceGuideSectionOpen] = useState(false);
 
   if (!isAuthenticated) {
     return (
-      <>
-        <Helmet>
-          <title>Admin Portal | Ballito Baby Gear</title>
-          <meta name="description" content="Admin portal for Ballito Baby Gear. Manage baby gear items and testimonials." />
-          <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-md">
-            <LoginForm />
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full">
+          <LoginForm />
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <Helmet>
-        <title>Admin Portal | Ballito Baby Gear</title>
-        <meta name="description" content="Admin portal for Ballito Baby Gear. Manage baby gear items and testimonials." />
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-8 flex justify-between items-center">
-            <h1 className="text-3xl font-bold mb-8 text-center">Admin Dashboard</h1>
-            <Button
-              onClick={logout}
-              variant="outline"
-              className="bg-gray-300 hover:bg-gray-400 text-primary py-2 px-4 rounded-full transition-colors flex items-center gap-2"
-            >
-              <LogOut size={16} />
-              Logout
-            </Button>
-          </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="text-gray-600 mt-2">Manage your baby gear rental business</p>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Product Management Section */}
-            <div className="lg:col-span-2">
-              <Collapsible open={openSections.products} onOpenChange={() => toggleSection('products')}>
-                <CollapsibleTrigger asChild>
-                  <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-xl font-semibold">Product Management</CardTitle>
-                      {openSections.products ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                    </CardHeader>
-                  </Card>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-6 mt-4">
+        <div className="space-y-6">
+          {/* Product Management Section */}
+          <Card className="shadow-lg">
+            <Collapsible open={productSectionOpen} onOpenChange={setProductSectionOpen}>
+              <CollapsibleTrigger asChild>
+                <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Product Management</span>
+                    {productSectionOpen ? (
+                      <ChevronDown className="h-5 w-5" />
+                    ) : (
+                      <ChevronRight className="h-5 w-5" />
+                    )}
+                  </CardTitle>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="space-y-8">
                   <GearManagement />
                   <TestimonialManagement />
                   <DeliveryRatesManagement />
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
 
-            {/* Price Guide Management Section */}
-            <div className="lg:col-span-2">
-              <Collapsible open={openSections.priceGuide} onOpenChange={() => toggleSection('priceGuide')}>
-                <CollapsibleTrigger asChild>
-                  <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-xl font-semibold">Price Guide Management</CardTitle>
-                      {openSections.priceGuide ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                    </CardHeader>
-                  </Card>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-6 mt-4">
+          {/* Price Guide Management Section */}
+          <Card className="shadow-lg">
+            <Collapsible open={priceGuideSectionOpen} onOpenChange={setPriceGuideSectionOpen}>
+              <CollapsibleTrigger asChild>
+                <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Price Guide Management</span>
+                    {priceGuideSectionOpen ? (
+                      <ChevronDown className="h-5 w-5" />
+                    ) : (
+                      <ChevronRight className="h-5 w-5" />
+                    )}
+                  </CardTitle>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent>
                   <PriceGuideManagement />
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
 
-            {/* Contact Messages - Always visible */}
-            <div className="lg:col-span-2">
+          {/* Contact Messages - Always visible */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle>Contact Messages</CardTitle>
+            </CardHeader>
+            <CardContent>
               <ContactMessagesManagement />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
