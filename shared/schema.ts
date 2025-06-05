@@ -108,6 +108,8 @@ export const priceGuides = pgTable("price_guides", {
   subtitle: text("subtitle").notNull(),
   fileUrl: text("file_url"),
   fileName: text("file_name"),
+  createdAt: text("created_at"),
+  updatedAt: text("updated_at"),
 });
 
 export const insertPriceGuideSchema = createInsertSchema(priceGuides).pick({
@@ -115,6 +117,8 @@ export const insertPriceGuideSchema = createInsertSchema(priceGuides).pick({
   subtitle: true,
   fileUrl: true,
   fileName: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export type DeliveryRate = typeof deliveryRates.$inferSelect;

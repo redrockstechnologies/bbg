@@ -1,3 +1,5 @@
+import { eq } from "drizzle-orm";
+import { db } from "./db";
 import { 
   users, type User, type InsertUser,
   gearItems, type GearItem, type InsertGearItem,
@@ -34,250 +36,149 @@ export interface IStorage {
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
   archiveContactMessage(id: number): Promise<ContactMessage | undefined>;
 
+  // Delivery rate operations
+  getAllDeliveryRates(): Promise<DeliveryRate[]>;
+  getDeliveryRate(id: number): Promise<DeliveryRate | undefined>;
+  createDeliveryRate(rate: InsertDeliveryRate): Promise<DeliveryRate>;
+  updateDeliveryRate(id: number, rate: InsertDeliveryRate): Promise<DeliveryRate | undefined>;
+  deleteDeliveryRate(id: number): Promise<boolean>;
+
   // Price guide operations
   getPriceGuide(): Promise<PriceGuide | undefined>;
   createOrUpdatePriceGuide(priceGuide: InsertPriceGuide): Promise<PriceGuide>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private gearItems: Map<number, GearItem>;
-  private testimonials: Map<number, Testimonial>;
-  private contactMessages: Map<number, ContactMessage>;
-  private priceGuide: PriceGuide | undefined;
-
-  private userCurrentId: number;
-  private gearCurrentId: number;
-  private testimonialCurrentId: number;
-  private contactMessageCurrentId: number;
-  private priceGuideCurrentId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.gearItems = new Map();
-    this.testimonials = new Map();
-    this.contactMessages = new Map();
-
-    this.userCurrentId = 1;
-    this.gearCurrentId = 1;
-    this.testimonialCurrentId = 1;
-    this.contactMessageCurrentId = 1;
-    this.priceGuideCurrentId = 1;
-
-    // Initialize with default price guide
-    this.priceGuide = {
-      id: 1,
-      title: "Our Price Guide",
-      subtitle: "View our Price Guide for the full price list of our products & services as well as our terms & conditions",
-      fileUrl: "",
-      fileName: "",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    // Initialize with admin user
-    this.createUser({ username: "admin", password: "password" });
-
-    // Add some default gear items
-    this.createGearItem({
-      itemType: "Baby Cot",
-      dayCost: "R120",
-      weekCost: "R600",
-      additionalDeets: "Comfortable, sturdy cot with mattress and fitted sheet included. Perfect for babies up to 2 years.",
-      imageUrl: "https://images.unsplash.com/photo-1618314085635-340e9b8a6daf?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
-    });
-
-    this.createGearItem({
-      itemType: "Stroller",
-      dayCost: "R150",
-      weekCost: "R750",
-      additionalDeets: "Lightweight, easy-fold stroller with sun canopy. Suitable for babies 6 months and older.",
-      imageUrl: "https://images.unsplash.com/photo-1591349884490-a6e09f2f4e1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
-    });
-
-    this.createGearItem({
-      itemType: "High Chair",
-      dayCost: "R100",
-      weekCost: "R500",
-      additionalDeets: "Easy-clean high chair with adjustable height and removable tray. Suitable for babies who can sit unassisted.",
-      imageUrl: "https://pixabay.com/get/g31ccf60c89bd83a410930828c2fe9bdc945c8529b6366a239b381eeb2fe20d1208db7e8a2e6eafade15e7d5cb6b789bc1db39c5fb247e869365c41fb4cf09fa1_1280.jpg"
-    });
-
-    // Add some default testimonials
-    this.createTestimonial({
-      name: "Sarah T.",
-      location: "Johannesburg",
-      rating: 5,
-      text: "Absolute lifesaver! We traveled with our 8-month-old and didn't have to worry about packing any baby gear. Everything was spotless and high quality."
-    });
-
-    this.createTestimonial({
-      name: "Michael R.",
-      location: "Cape Town",
-      rating: 5,
-      text: "The NappyNow service was incredible! We ran out of nappies at 9 PM and they had them delivered within the hour. Cannot recommend enough!"
-    });
-
-    this.createTestimonial({
-      name: "Emma K.",
-      location: "Durban",
-      rating: 5,
-      text: "We've used baby gear rental services before, but Ballito Baby Gear is on another level. The quality of the equipment and the service was impeccable."
-    });
-  }
-
+export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username
-    );
+    const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    return result[0];
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+    const result = await db.insert(users).values(insertUser).returning();
+    return result[0];
   }
 
   // Gear item operations
   async getAllGearItems(): Promise<GearItem[]> {
-    return Array.from(this.gearItems.values());
+    return await db.select().from(gearItems);
   }
 
   async getGearItem(id: number): Promise<GearItem | undefined> {
-    return this.gearItems.get(id);
+    const result = await db.select().from(gearItems).where(eq(gearItems.id, id)).limit(1);
+    return result[0];
   }
 
   async createGearItem(insertGearItem: InsertGearItem): Promise<GearItem> {
-    const id = this.gearCurrentId++;
-    const gearItem: GearItem = { ...insertGearItem, id };
-    this.gearItems.set(id, gearItem);
-    return gearItem;
+    const result = await db.insert(gearItems).values(insertGearItem).returning();
+    return result[0];
   }
 
   async updateGearItem(id: number, updateGearItem: InsertGearItem): Promise<GearItem | undefined> {
-    const existingGearItem = this.gearItems.get(id);
-    if (!existingGearItem) {
-      return undefined;
-    }
-
-    const updatedGearItem: GearItem = { ...updateGearItem, id };
-    this.gearItems.set(id, updatedGearItem);
-    return updatedGearItem;
+    const result = await db.update(gearItems).set(updateGearItem).where(eq(gearItems.id, id)).returning();
+    return result[0];
   }
 
   async deleteGearItem(id: number): Promise<boolean> {
-    return this.gearItems.delete(id);
+    const result = await db.delete(gearItems).where(eq(gearItems.id, id)).returning();
+    return result.length > 0;
   }
 
   // Testimonial operations
   async getAllTestimonials(): Promise<Testimonial[]> {
-    return Array.from(this.testimonials.values());
+    return await db.select().from(testimonials);
   }
 
   async getTestimonial(id: number): Promise<Testimonial | undefined> {
-    return this.testimonials.get(id);
+    const result = await db.select().from(testimonials).where(eq(testimonials.id, id)).limit(1);
+    return result[0];
   }
 
   async createTestimonial(insertTestimonial: InsertTestimonial): Promise<Testimonial> {
-    const id = this.testimonialCurrentId++;
-    const testimonial: Testimonial = { ...insertTestimonial, id };
-    this.testimonials.set(id, testimonial);
-    return testimonial;
+    const result = await db.insert(testimonials).values(insertTestimonial).returning();
+    return result[0];
   }
 
   async updateTestimonial(id: number, updateTestimonial: InsertTestimonial): Promise<Testimonial | undefined> {
-    const existingTestimonial = this.testimonials.get(id);
-    if (!existingTestimonial) {
-      return undefined;
-    }
-
-    const updatedTestimonial: Testimonial = { ...updateTestimonial, id };
-    this.testimonials.set(id, updatedTestimonial);
-    return updatedTestimonial;
+    const result = await db.update(testimonials).set(updateTestimonial).where(eq(testimonials.id, id)).returning();
+    return result[0];
   }
 
   async deleteTestimonial(id: number): Promise<boolean> {
-    return this.testimonials.delete(id);
+    const result = await db.delete(testimonials).where(eq(testimonials.id, id)).returning();
+    return result.length > 0;
   }
 
   // Contact message operations
   async getAllContactMessages(): Promise<ContactMessage[]> {
-    return Array.from(this.contactMessages.values());
+    return await db.select().from(contactMessages);
   }
 
   async getContactMessage(id: number): Promise<ContactMessage | undefined> {
-    return this.contactMessages.get(id);
+    const result = await db.select().from(contactMessages).where(eq(contactMessages.id, id)).limit(1);
+    return result[0];
   }
 
   async createContactMessage(insertContactMessage: InsertContactMessage): Promise<ContactMessage> {
-    const id = this.contactMessageCurrentId++;
-    const contactMessage: ContactMessage = { 
-      ...insertContactMessage, 
-      id, 
-      archived: false,
-      createdAt: new Date().toISOString()
-    };
-    this.contactMessages.set(id, contactMessage);
-    return contactMessage;
-  }
-
-  async updateContactMessage(id: number, updateContactMessage: InsertContactMessage): Promise<ContactMessage | undefined> {
-    const existingMessage = this.contactMessages.get(id);
-    if (!existingMessage) {
-      return undefined;
-    }
-
-    const updatedMessage: ContactMessage = { ...updateContactMessage, id };
-    this.contactMessages.set(id, updatedMessage);
-    return updatedMessage;
-  }
-
-  async deleteContactMessage(id: number): Promise<boolean> {
-    return this.contactMessages.delete(id);
+    const result = await db.insert(contactMessages).values(insertContactMessage).returning();
+    return result[0];
   }
 
   async archiveContactMessage(id: number): Promise<ContactMessage | undefined> {
-    const existingMessage = this.contactMessages.get(id);
-    if (!existingMessage) {
-      return undefined;
-    }
+    const result = await db.update(contactMessages).set({ archived: true }).where(eq(contactMessages.id, id)).returning();
+    return result[0];
+  }
 
-    const updatedMessage: ContactMessage = { ...existingMessage, archived: true };
-    this.contactMessages.set(id, updatedMessage);
-    return updatedMessage;
+  // Delivery rate operations
+  async getAllDeliveryRates(): Promise<DeliveryRate[]> {
+    return await db.select().from(deliveryRates);
+  }
+
+  async getDeliveryRate(id: number): Promise<DeliveryRate | undefined> {
+    const result = await db.select().from(deliveryRates).where(eq(deliveryRates.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createDeliveryRate(insertDeliveryRate: InsertDeliveryRate): Promise<DeliveryRate> {
+    const result = await db.insert(deliveryRates).values(insertDeliveryRate).returning();
+    return result[0];
+  }
+
+  async updateDeliveryRate(id: number, updateDeliveryRate: InsertDeliveryRate): Promise<DeliveryRate | undefined> {
+    const result = await db.update(deliveryRates).set(updateDeliveryRate).where(eq(deliveryRates.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteDeliveryRate(id: number): Promise<boolean> {
+    const result = await db.delete(deliveryRates).where(eq(deliveryRates.id, id)).returning();
+    return result.length > 0;
   }
 
   // Price guide operations
   async getPriceGuide(): Promise<PriceGuide | undefined> {
-    return this.priceGuide;
+    const result = await db.select().from(priceGuides).limit(1);
+    return result[0];
   }
 
   async createOrUpdatePriceGuide(insertPriceGuide: InsertPriceGuide): Promise<PriceGuide> {
-    if (this.priceGuide) {
+    const existing = await this.getPriceGuide();
+
+    if (existing) {
       // Update existing
-      this.priceGuide = {
-        ...this.priceGuide,
-        ...insertPriceGuide,
-        updatedAt: new Date().toISOString()
-      };
+      const result = await db.update(priceGuides).set(insertPriceGuide).where(eq(priceGuides.id, existing.id)).returning();
+      return result[0];
     } else {
       // Create new
-      const id = this.priceGuideCurrentId++;
-      this.priceGuide = {
-        ...insertPriceGuide,
-        id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      const result = await db.insert(priceGuides).values(insertPriceGuide).returning();
+      return result[0];
     }
-    return this.priceGuide;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
