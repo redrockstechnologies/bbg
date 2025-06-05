@@ -1,19 +1,48 @@
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet';
-import { useAuth } from '@/context/AuthContext';
-import LoginForm from '@/components/admin/LoginForm';
-import GearManagement from '@/components/admin/GearManagement';
+import { useAuth } from "@/context/AuthContext";
+import LoginForm from "@/components/admin/LoginForm";
+import GearManagement from "@/components/admin/GearManagement";
 import TestimonialManagement from "@/components/admin/TestimonialManagement";
+import ContactMessagesManagement from "@/components/admin/ContactMessagesManagement";
 import DeliveryRatesManagement from "@/components/admin/DeliveryRatesManagement";
 import PriceGuideManagement from "@/components/admin/PriceGuideManagement";
-import ImagesManagement from "@/components/admin/ImagesManagement";
-import ContactMessagesManagement from "@/components/admin/ContactMessagesManagement";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 
 const Admin = () => {
   const { isAuthenticated, logout } = useAuth();
-  const [activeSection, setActiveSection] = useState<'gear' | 'testimonials' | 'images' | 'delivery' | 'contact-messages'>('gear');
+  const [openSections, setOpenSections] = useState({
+    products: false,
+    priceGuide: false,
+  });
+
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Helmet>
+          <title>Admin Portal | Ballito Baby Gear</title>
+          <meta name="description" content="Admin portal for Ballito Baby Gear. Manage baby gear items and testimonials." />
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            <LoginForm />
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -22,78 +51,63 @@ const Admin = () => {
         <meta name="description" content="Admin portal for Ballito Baby Gear. Manage baby gear items and testimonials." />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-
-      <div className="container mx-auto px-4 py-10">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl mb-3 font-medium">Admin Portal</h1>
-          <div className="w-24 h-1 bg-accent mx-auto mt-4"></div>
-        </div>
-
-        {!isAuthenticated ? (
-          // Login Form
-          <LoginForm />
-        ) : (
-          // Admin Dashboard
-          <div id="admin-dashboard">
-            <div className="mb-8 flex justify-between items-center">
-              <h2 className="text-2xl">Dashboard</h2>
-              <Button 
-                onClick={logout}
-                variant="outline"
-                className="bg-gray-300 hover:bg-gray-400 text-primary py-2 px-4 rounded-full transition-colors flex items-center gap-2"
-              >
-                <LogOut size={16} />
-                Logout
-              </Button>
-            </div>
-
-            {/* Submenu */}
-            <div className="grid grid-cols-2 md:flex md:space-x-4 gap-2 md:gap-0 mb-8 justify-center max-w-4xl mx-auto px-4">
-              <button
-                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'contact-messages' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
-                onClick={() => setActiveSection('contact-messages')}
-              >
-                Contact Messages
-              </button>
-              <button
-                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'gear' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
-                onClick={() => setActiveSection('gear')}
-              >
-                Gear Items
-              </button>
-              <button
-                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'testimonials' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
-                onClick={() => setActiveSection('testimonials')}
-              >
-                Testimonials
-              </button>
-              <button
-                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'images' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
-                onClick={() => setActiveSection('images')}
-              >
-                Images
-              </button>
-              <button
-                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'delivery' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
-                onClick={() => setActiveSection('delivery')}
-              >
-                Delivery Rates
-              </button>
-            </div>
-
-            {/* Section Content */}
-            {activeSection === 'contact-messages' && <ContactMessagesManagement />}
-            {activeSection === 'gear' && (
-              <>
-                <GearManagement />
-                <PriceGuideManagement />
-              </>
-            )}
-            {activeSection === 'testimonials' && <TestimonialManagement />}
-            {activeSection === 'images' && <ImagesManagement />}
-            {activeSection === 'delivery' && <DeliveryRatesManagement />}
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8 flex justify-between items-center">
+            <h1 className="text-3xl font-bold mb-8 text-center">Admin Dashboard</h1>
+            <Button
+              onClick={logout}
+              variant="outline"
+              className="bg-gray-300 hover:bg-gray-400 text-primary py-2 px-4 rounded-full transition-colors flex items-center gap-2"
+            >
+              <LogOut size={16} />
+              Logout
+            </Button>
           </div>
-        )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Product Management Section */}
+            <div className="lg:col-span-2">
+              <Collapsible open={openSections.products} onOpenChange={() => toggleSection('products')}>
+                <CollapsibleTrigger asChild>
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-xl font-semibold">Product Management</CardTitle>
+                      {openSections.products ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                    </CardHeader>
+                  </Card>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-6 mt-4">
+                  <GearManagement />
+                  <TestimonialManagement />
+                  <DeliveryRatesManagement />
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+
+            {/* Price Guide Management Section */}
+            <div className="lg:col-span-2">
+              <Collapsible open={openSections.priceGuide} onOpenChange={() => toggleSection('priceGuide')}>
+                <CollapsibleTrigger asChild>
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-xl font-semibold">Price Guide Management</CardTitle>
+                      {openSections.priceGuide ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                    </CardHeader>
+                  </Card>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-6 mt-4">
+                  <PriceGuideManagement />
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+
+            {/* Contact Messages - Always visible */}
+            <div className="lg:col-span-2">
+              <ContactMessagesManagement />
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
