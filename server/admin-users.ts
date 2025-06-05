@@ -1,7 +1,7 @@
 
 import { Request, Response } from 'express';
 import { db } from '../lib/database';
-import { adminUsers, roles } from '../../shared/schema';
+import { adminUsers, roles } from '../shared/schema';
 import { eq } from 'drizzle-orm';
 
 export async function createAdminUser(req: Request, res: Response) {
