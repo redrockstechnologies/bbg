@@ -32,14 +32,11 @@ export async function initializeDatabase() {
     
     if (priceGuideExists.length === 0) {
       // Create default price guide
-      const now = new Date().toISOString();
       await db.insert(priceGuides).values({
         title: "Our Price Guide",
         subtitle: "View our Price Guide for the full price list of our products & services as well as our terms & conditions",
         fileUrl: "",
-        fileName: "",
-        createdAt: now,
-        updatedAt: now
+        fileName: ""
       });
     }
 
