@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
+import apiRoutes from "./routes";
+import priceGuideRoutes from "./priceGuide";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase } from "./db";
 
@@ -42,6 +43,9 @@ app.use((req, res, next) => {
   await initializeDatabase();
 
   const server = await registerRoutes(app);
+
+  app.use("/api", apiRoutes);
+  app.use(priceGuideRoutes);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

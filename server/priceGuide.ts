@@ -4,7 +4,15 @@ import { Client } from '@replit/object-storage';
 import multer from 'multer';
 
 const router = Router();
-const storage = new Client();
+
+// Initialize storage client with proper error handling
+let storage: Client;
+try {
+  storage = new Client();
+} catch (error) {
+  console.error('Failed to initialize Replit Object Storage:', error);
+  // Fallback - we'll handle this in individual routes
+}
 
 // Configure multer for file uploads
 const upload = multer({
@@ -21,10 +29,23 @@ const upload = multer({
   },
 });
 
+// Helper function to ensure storage is available
+const ensureStorage = () => {
+  if (!storage) {
+    try {
+      storage = new Client();
+    } catch (error) {
+      throw new Error('Object storage not available');
+    }
+  }
+  return storage;
+};
+
 // Get current price guide
 router.get('/api/price-guide', async (req, res) => {
   try {
-    const { ok, value, error } = await storage.downloadAsText('price-guide/metadata.json');
+    const storageClient = ensureStorage();
+    const { ok, value, error } = await storageClient.downloadAsText('price-guide/metadata.json');
     
     if (!ok) {
       if (error.message.includes('not found') || error.message.includes('NoSuchKey')) {
@@ -58,7 +79,8 @@ router.post('/api/price-guide', upload.single('pdf'), async (req, res) => {
     const pdfPath = `price-guide/${fileName}`;
     
     // Upload PDF file
-    const { ok: pdfOk, error: pdfError } = await storage.uploadFromBytes(pdfPath, req.file.buffer);
+    const storageClient = ensureStorage();
+    const { ok: pdfOk, error: pdfError } = await storageClient.uploadFromBytes(pdfPath, req.file.buffer);
     
     if (!pdfOk) {
       throw pdfError;
@@ -74,7 +96,7 @@ router.post('/api/price-guide', upload.single('pdf'), async (req, res) => {
     };
     
     // Upload metadata
-    const { ok: metaOk, error: metaError } = await storage.uploadFromText(
+    const { ok: metaOk, error: metaError } = await storageClient.uploadFromText(
       'price-guide/metadata.json',
       JSON.stringify(metadata, null, 2)
     );
@@ -94,7 +116,8 @@ router.post('/api/price-guide', upload.single('pdf'), async (req, res) => {
 router.get('/api/price-guide/download', async (req, res) => {
   try {
     // Get metadata first
-    const { ok: metaOk, value: metaValue, error: metaError } = await storage.downloadAsText('price-guide/metadata.json');
+    const storageClient = ensureStorage();
+    const { ok: metaOk, value: metaValue, error: metaError } = await storageClient.downloadAsText('price-guide/metadata.json');
     
     if (!metaOk) {
       return res.status(404).json({ error: 'Price guide not found' });
@@ -104,7 +127,7 @@ router.get('/api/price-guide/download', async (req, res) => {
     const pdfPath = `price-guide/${metadata.fileName}`;
     
     // Download PDF
-    const { ok: pdfOk, value: pdfBuffer, error: pdfError } = await storage.downloadAsBytes(pdfPath);
+    const { ok: pdfOk, value: pdfBuffer, error: pdfError } = await storageClient.downloadAsBytes(pdfPath);
     
     if (!pdfOk) {
       throw pdfError;
@@ -123,18 +146,19 @@ router.get('/api/price-guide/download', async (req, res) => {
 router.delete('/api/price-guide', async (req, res) => {
   try {
     // Get metadata first to get the file name
-    const { ok: metaOk, value: metaValue } = await storage.downloadAsText('price-guide/metadata.json');
+    const storageClient = ensureStorage();
+    const { ok: metaOk, value: metaValue } = await storageClient.downloadAsText('price-guide/metadata.json');
     
     if (metaOk) {
       const metadata = JSON.parse(metaValue);
       const pdfPath = `price-guide/${metadata.fileName}`;
       
       // Delete PDF file
-      await storage.delete(pdfPath);
+      await storageClient.delete(pdfPath);
     }
     
     // Delete metadata
-    await storage.delete('price-guide/metadata.json');
+    await storageClient.delete('price-guide/metadata.json');
     
     res.json({ success: true });
   } catch (error) {
