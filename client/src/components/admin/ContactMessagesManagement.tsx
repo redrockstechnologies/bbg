@@ -128,11 +128,20 @@ const ContactMessagesManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Contact Messages</h2>
-        <Button onClick={fetchContactMessages} className="bg-accent hover:bg-accent/90">
-          Refresh
-        </Button>
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h3 className="text-xl font-bold text-gray-800" style={{ fontFamily: 'Gelica, serif' }}>
+              Contact Messages Management
+            </h3>
+            <p className="text-gray-600 mt-1" style={{ fontFamily: 'Figtree, sans-serif' }}>
+              View and manage customer inquiries and messages
+            </p>
+          </div>
+          <Button onClick={fetchContactMessages} className="bg-accent hover:bg-accent/90">
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Filter toggle */}

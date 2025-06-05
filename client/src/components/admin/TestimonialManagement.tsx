@@ -199,24 +199,35 @@ const TestimonialManagement = () => {
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl">Manage Testimonials</h3>
-        <Button 
-          onClick={() => {
-            setEditingTestimonial(null);
-            setShowForm(true);
-          }}
-          className="bg-accent hover:bg-accent/90 text-white py-2 px-4 rounded-full transition-colors flex items-center"
-        >
-          <Plus size={16} className="mr-1" /> Add New Testimonial
-        </Button>
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h3 className="text-xl font-bold text-gray-800" style={{ fontFamily: 'Gelica, serif' }}>
+              Testimonials Management
+            </h3>
+            <p className="text-gray-600 mt-1" style={{ fontFamily: 'Figtree, sans-serif' }}>
+              Manage customer testimonials and reviews
+            </p>
+          </div>
+          <Button 
+            onClick={() => {
+              setEditingTestimonial(null);
+              setShowForm(true);
+            }}
+            className="bg-accent hover:bg-accent/90 text-white py-2 px-4 rounded-full transition-colors flex items-center"
+          >
+            <Plus size={16} className="mr-1" /> Add New Testimonial
+          </Button>
+        </div>
       </div>
       
       {/* Add/Edit Testimonial Form */}
       {showForm && (
-        <div className="bg-white rounded-lg p-6 mb-8 border border-gray-200">
-          <h3 className="text-xl mb-6">{editingTestimonial ? "Edit Testimonial" : "Add New Testimonial"}</h3>
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-xl font-bold text-gray-800 mb-6" style={{ fontFamily: 'Gelica, serif' }}>
+            {editingTestimonial ? "Edit Testimonial" : "Add New Testimonial"}
+          </h3>
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -326,8 +337,12 @@ const TestimonialManagement = () => {
       )}
       
       {/* Testimonials Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="bg-white rounded-lg shadow p-6">
+        <h4 className="text-lg font-bold text-gray-800 mb-4" style={{ fontFamily: 'Gelica, serif' }}>
+          Current Testimonials
+        </h4>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
           <thead>
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
@@ -375,6 +390,7 @@ const TestimonialManagement = () => {
             )}
           </tbody>
         </table>
+        </div>
       </div>
       
       {/* Delete Confirmation Dialog */}

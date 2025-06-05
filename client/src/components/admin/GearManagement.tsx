@@ -207,24 +207,35 @@ const GearManagement = () => {
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl">Manage Gear Items</h3>
-        <Button 
-          onClick={() => {
-            setEditingItem(null);
-            setShowForm(true);
-          }}
-          className="bg-accent hover:bg-accent/90 text-white py-2 px-4 rounded-full transition-colors flex items-center"
-        >
-          <Plus size={16} className="mr-1" /> Add New Item
-        </Button>
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h3 className="text-xl font-bold text-gray-800" style={{ fontFamily: 'Gelica, serif' }}>
+              Inventory Management
+            </h3>
+            <p className="text-gray-600 mt-1" style={{ fontFamily: 'Figtree, sans-serif' }}>
+              Manage your baby gear inventory items
+            </p>
+          </div>
+          <Button 
+            onClick={() => {
+              setEditingItem(null);
+              setShowForm(true);
+            }}
+            className="bg-accent hover:bg-accent/90 text-white py-2 px-4 rounded-full transition-colors flex items-center"
+          >
+            <Plus size={16} className="mr-1" /> Add New Item
+          </Button>
+        </div>
       </div>
       
       {/* Add/Edit Gear Form */}
       {showForm && (
-        <div className="bg-white rounded-lg p-6 mb-8 border border-gray-200">
-          <h3 className="text-xl mb-6">{editingItem ? "Edit Gear Item" : "Add New Gear Item"}</h3>
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-xl font-bold text-gray-800 mb-6" style={{ fontFamily: 'Gelica, serif' }}>
+            {editingItem ? "Edit Gear Item" : "Add New Gear Item"}
+          </h3>
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -340,8 +351,12 @@ const GearManagement = () => {
       )}
       
       {/* Gear Items Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="bg-white rounded-lg shadow p-6">
+        <h4 className="text-lg font-bold text-gray-800 mb-4" style={{ fontFamily: 'Gelica, serif' }}>
+          Current Inventory
+        </h4>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
           <thead>
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Type</th>
@@ -389,8 +404,7 @@ const GearManagement = () => {
             )}
           </tbody>
         </table>
-      </div>
-      
+        </div>
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteItemId} onOpenChange={() => setDeleteItemId(null)}>
         <AlertDialogContent>

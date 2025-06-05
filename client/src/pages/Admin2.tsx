@@ -44,7 +44,7 @@ const Admin2 = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <Dashboard2 />;
+        return <Dashboard2 onNavigateToSection={setActiveSection} />;
       case 'inventory':
         return <GearManagement />;
       case 'testimonials':
@@ -58,7 +58,7 @@ const Admin2 = () => {
       case 'settings':
         return <Settings2 />;
       default:
-        return <Dashboard2 />;
+        return <Dashboard2 onNavigateToSection={setActiveSection} />;
     }
   };
 

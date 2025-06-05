@@ -9,7 +9,11 @@ interface DashboardStats {
   unreadMessages: number;
 }
 
-const Dashboard2 = () => {
+interface Dashboard2Props {
+  onNavigateToSection?: (section: string) => void;
+}
+
+const Dashboard2: React.FC<Dashboard2Props> = ({ onNavigateToSection }) => {
   const [stats, setStats] = useState<DashboardStats>({
     gearItems: 0,
     testimonials: 0,
@@ -34,9 +38,9 @@ const Dashboard2 = () => {
         const unreadCount = contactData.filter((msg: any) => !msg.archived).length;
 
         setStats({
-          gearItems: gearData.length,
-          testimonials: testimonialsData.length,
-          contactMessages: contactData.length,
+          gearItems: gearData.length || 0,
+          testimonials: testimonialsData.length || 0,
+          contactMessages: contactData.length || 0,
           unreadMessages: unreadCount
         });
       } catch (error) {
@@ -83,6 +87,24 @@ const Dashboard2 = () => {
       textColor: 'text-accent'
     }
   ];
+
+  const handleQuickAction = (action: string) => {
+    if (onNavigateToSection) {
+      switch (action) {
+        case 'inventory':
+          onNavigateToSection('inventory');
+          break;
+        case 'messages':
+          onNavigateToSection('contact-messages');
+          break;
+        case 'rates':
+          onNavigateToSection('rates');
+          break;
+        default:
+          break;
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -141,7 +163,10 @@ const Dashboard2 = () => {
           Quick Actions
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="p-4 border border-gray-200 rounded-lg hover:border-accent hover:bg-accent/5 transition-colors text-left">
+          <button 
+            onClick={() => handleQuickAction('inventory')}
+            className="p-4 border border-gray-200 rounded-lg hover:border-accent hover:bg-accent/5 transition-colors text-left"
+          >
             <h5 className="font-medium text-gray-800 mb-1" style={{ fontFamily: 'Figtree, sans-serif' }}>
               Add New Gear Item
             </h5>
@@ -149,7 +174,10 @@ const Dashboard2 = () => {
               Quickly add new inventory
             </p>
           </button>
-          <button className="p-4 border border-gray-200 rounded-lg hover:border-accent hover:bg-accent/5 transition-colors text-left">
+          <button 
+            onClick={() => handleQuickAction('messages')}
+            className="p-4 border border-gray-200 rounded-lg hover:border-accent hover:bg-accent/5 transition-colors text-left"
+          >
             <h5 className="font-medium text-gray-800 mb-1" style={{ fontFamily: 'Figtree, sans-serif' }}>
               View Messages
             </h5>
@@ -157,7 +185,10 @@ const Dashboard2 = () => {
               Check customer inquiries
             </p>
           </button>
-          <button className="p-4 border border-gray-200 rounded-lg hover:border-accent hover:bg-accent/5 transition-colors text-left">
+          <button 
+            onClick={() => handleQuickAction('rates')}
+            className="p-4 border border-gray-200 rounded-lg hover:border-accent hover:bg-accent/5 transition-colors text-left"
+          >
             <h5 className="font-medium text-gray-800 mb-1" style={{ fontFamily: 'Figtree, sans-serif' }}>
               Update Rates
             </h5>
