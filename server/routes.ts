@@ -2,19 +2,6 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertGearItemSchema, insertTestimonialSchema, insertContactMessageSchema, insertDeliveryRateSchema, insertPriceGuideSchema } from "@shared/schema";
-import { deleteTestimonial } from "./testimonials";
-import { getContacts, deleteContact, updateContactArchiveStatus } from "./contacts";
-import { getDeliveryRates, createDeliveryRate, updateDeliveryRate, deleteDeliveryRate } from "./delivery-rates";
-import { getPriceGuides, createPriceGuide, updatePriceGuide, deletePriceGuide } from "./price-guides";
-import { 
-  createAdminUser, 
-  getAdminUsers, 
-  checkUserExists, 
-  activateUser, 
-  getUserProfile,
-  createRole,
-  getRoles
-} from "./admin-users";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
@@ -305,17 +292,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({ message: "Invalid price guide data", error });
     }
   });
-
-  // Admin users routes
-  app.get("/api/admin-users", getAdminUsers);
-  app.post("/api/admin-users", createAdminUser);
-  app.get("/api/admin-users/check/:email", checkUserExists);
-  app.get("/api/admin-users/profile/:email", getUserProfile);
-  app.put("/api/admin-users/activate", activateUser);
-
-  // Roles routes
-  app.get("/api/roles", getRoles);
-  app.post("/api/roles", createRole);
 
   const httpServer = createServer(app);
 

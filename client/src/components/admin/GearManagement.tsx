@@ -17,14 +17,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { 
@@ -61,9 +53,9 @@ const GearManagement = () => {
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
-
+  
   const { toast } = useToast();
-
+  
   // Form setup
   const form = useForm<GearItemFormValues>({
     resolver: zodResolver(gearItemSchema),
@@ -74,12 +66,12 @@ const GearManagement = () => {
       AdditionalDeets: "",
     },
   });
-
+  
   // Fetch gear items on mount
   useEffect(() => {
     fetchGearItems();
   }, []);
-
+  
   // Reset form when editing item changes
   useEffect(() => {
     if (editingItem) {
@@ -98,21 +90,21 @@ const GearManagement = () => {
       });
     }
   }, [editingItem, form]);
-
+  
   // Fetch gear items from Firestore
   const fetchGearItems = async () => {
     try {
       const gearRef = collection(db, "gear");
       const snapshot = await getDocs(gearRef);
       const fetchedItems: GearItem[] = [];
-
+      
       snapshot.forEach((doc) => {
         fetchedItems.push({
           id: doc.id,
           ...doc.data() as Omit<GearItem, 'id'>
         });
       });
-
+      
       setGearItems(fetchedItems);
       setLoading(false);
     } catch (error) {
@@ -125,35 +117,35 @@ const GearManagement = () => {
       setLoading(false);
     }
   };
-
+  
   // Handle file change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFileUpload(e.target.files[0]);
     }
   };
-
+  
   // Handle form submission (add/edit)
   const onSubmit = async (data: GearItemFormValues) => {
     setIsSubmitting(true);
-
+    
     try {
       let imageUrl = editingItem?.ImageUrl || "";
-
+      
       // Upload image if selected
       if (fileUpload) {
         const storageRef = ref(storage, `gear/${Date.now()}_${fileUpload.name}`);
         const uploadResult = await uploadBytes(storageRef, fileUpload);
         imageUrl = await getDownloadURL(uploadResult.ref);
       }
-
+      
       if (editingItem) {
         // Update existing item
         await updateDoc(doc(db, "gear", editingItem.id), {
           ...data,
           ImageUrl: imageUrl,
         });
-
+        
         toast({
           title: "Success",
           description: "Gear item updated successfully",
@@ -164,13 +156,13 @@ const GearManagement = () => {
           ...data,
           ImageUrl: imageUrl,
         });
-
+        
         toast({
           title: "Success",
           description: "Gear item added successfully",
         });
       }
-
+      
       // Reset and refresh
       setEditingItem(null);
       setShowForm(false);
@@ -188,19 +180,19 @@ const GearManagement = () => {
       setIsSubmitting(false);
     }
   };
-
+  
   // Handle delete
   const handleDelete = async () => {
     if (!deleteItemId) return;
-
+    
     try {
       await deleteDoc(doc(db, "gear", deleteItemId));
-
+      
       toast({
         title: "Success",
         description: "Gear item deleted successfully",
       });
-
+      
       fetchGearItems();
     } catch (error) {
       console.error("Error deleting gear item:", error);
@@ -213,120 +205,209 @@ const GearManagement = () => {
       setDeleteItemId(null);
     }
   };
-
+  
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle style={{ fontFamily: 'Gelica, serif' }}>Inventory Management</CardTitle>
-              <CardDescription style={{ fontFamily: 'Figtree, sans-serif' }}>
-                Add, edit, and manage your baby gear inventory
-              </CardDescription>
-            </div>
-            <Button onClick={() => setShowForm(!showForm)} className="bg-accent hover:bg-accent/90 text-white">
-              <Plus className="mr-2 h-4 w-4" />
-              Add New Item
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {showForm && (
-            <form onSubmit={editingItem ? handleUpdate : handleSubmit} className="space-y-4 bg-gray-50 p-6 rounded-lg">
-              <h4 className="text-lg font-medium" style={{ fontFamily: 'Gelica, serif' }}>
-                {editingItem ? "Edit" : "Add New"} Gear Item
-              </h4>
-
-              <div className="mb-4">
-                <Label htmlFor="itemType" className="block text-sm font-medium text-gray-700">
-                  Item Type
-                </Label>
+    <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl">Manage Gear Items</h3>
+        <Button 
+          onClick={() => {
+            setEditingItem(null);
+            setShowForm(true);
+          }}
+          className="bg-accent hover:bg-accent/90 text-white py-2 px-4 rounded-full transition-colors flex items-center"
+        >
+          <Plus size={16} className="mr-1" /> Add New Item
+        </Button>
+      </div>
+      
+      {/* Add/Edit Gear Form */}
+      {showForm && (
+        <div className="bg-white rounded-lg p-6 mb-8 border border-gray-200">
+          <h3 className="text-xl mb-6">{editingItem ? "Edit Gear Item" : "Add New Gear Item"}</h3>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="ItemType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Item Type</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="DayCost"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Daily Cost</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="WeekCost"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Weekly Cost</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="AdditionalDeets"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Additional Details</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        rows={3} 
+                        className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="mb-6">
+                <label className="block mb-2 font-medium">Item Image</label>
                 <Input
-                  type="text"
-                  id="itemType"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none"
                 />
+                {editingItem?.ImageUrl && (
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">Current image:</p>
+                    <img 
+                      src={editingItem.ImageUrl} 
+                      alt={editingItem.ItemType} 
+                      className="h-20 w-20 object-cover mt-1 rounded"
+                    />
+                  </div>
+                )}
               </div>
-
-              <div className="mb-4">
-                <Label htmlFor="dayCost" className="block text-sm font-medium text-gray-700">
-                  Daily Cost
-                </Label>
-                <Input
-                  type="number"
-                  id="dayCost"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
-
-              <div className="mb-4">
-                <Label htmlFor="weekCost" className="block text-sm font-medium text-gray-700">
-                  Weekly Cost
-                </Label>
-                <Input
-                  type="number"
-                  id="weekCost"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
-
-              <div className="mb-4">
-                <Label htmlFor="additionalDeets" className="block text-sm font-medium text-gray-700">
-                  Additional Details
-                </Label>
-                <Textarea
-                  id="additionalDeets"
-                  rows={3}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
-
-              <div className="flex justify-end">
-                <Button type="submit" className="bg-accent hover:bg-accent/90 text-white">
-                  {editingItem ? "Update" : "Add"}
+              
+              <div className="flex space-x-4">
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full transition-colors"
+                >
+                  {isSubmitting ? "Saving..." : "Save Item"}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => setShowForm(false)}
+                  className="bg-gray-300 hover:bg-gray-400 text-primary py-2 px-6 rounded-full transition-colors"
+                >
+                  Cancel
                 </Button>
               </div>
             </form>
-          )}
-
-          <div className="space-y-4">
-            {gearItems.map((item) => (
-              <div key={item.id} className="p-4 border rounded-lg flex justify-between items-center">
-                <div>
-                  <h4 className="font-medium" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                    {item.itemType}
-                  </h4>
-                  <p className="text-sm text-gray-600" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                    Day: {item.dayCost} | Week: {item.weekCost}
-                  </p>
-                  {item.additionalDeets && (
-                    <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                      {item.additionalDeets}
-                    </p>
-                  )}
-                </div>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(item)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(item.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+          </Form>
+        </div>
+      )}
+      
+      {/* Gear Items Table */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Daily Cost</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weekly Cost</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="px-6 py-4 text-center">Loading...</td>
+              </tr>
+            ) : gearItems.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-6 py-4 text-center">No gear items found</td>
+              </tr>
+            ) : (
+              gearItems.map((item) => (
+                <tr key={item.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.ItemType}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.DayCost}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.WeekCost}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Button
+                      variant="ghost"
+                      className="text-blue-600 hover:text-blue-800 mr-3"
+                      onClick={() => {
+                        setEditingItem(item);
+                        setShowForm(true);
+                      }}
+                    >
+                      <Edit size={16} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="text-red-600 hover:text-red-800"
+                      onClick={() => setDeleteItemId(item.id)}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteItemId} onOpenChange={() => setDeleteItemId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this gear item. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

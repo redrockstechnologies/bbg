@@ -28,39 +28,8 @@ import Settings2 from '@/components/admin2/Settings2';
 import Collaborations2 from '@/components/admin2/Collaborations2';
 
 const Admin2 = () => {
-  const { isAuthenticated, logout, user } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const [activeSection, setActiveSection] = useState<'dashboard' | 'inventory' | 'testimonials' | 'rates' | 'contact-messages' | 'collaborations' | 'settings'>('dashboard');
-  const [userProfile, setUserProfile] = useState<any>(null);
-
-  React.useEffect(() => {
-    // Listen for quick action navigation events
-    const handleNavigation = (event: CustomEvent) => {
-      setActiveSection(event.detail);
-    };
-
-    window.addEventListener('navigateToSection', handleNavigation as EventListener);
-    
-    // Fetch user profile data
-    const fetchUserProfile = async () => {
-      if (user?.email) {
-        try {
-          const response = await fetch(`/api/admin-users/profile/${user.email}`);
-          if (response.ok) {
-            const profile = await response.json();
-            setUserProfile(profile);
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
-        }
-      }
-    };
-
-    fetchUserProfile();
-
-    return () => {
-      window.removeEventListener('navigateToSection', handleNavigation as EventListener);
-    };
-  }, [user]);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -129,7 +98,7 @@ const Admin2 = () => {
                 Welcome back,
               </p>
               <p className="font-medium text-accent" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                {userProfile?.firstName || user?.email || 'Admin User'}
+                Admin User
               </p>
             </div>
 
