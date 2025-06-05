@@ -8,7 +8,14 @@ import { insertGearItemSchema, insertContactMessageSchema, insertDeliveryRateSch
 import multer from 'multer';
 import { Client } from '@replit/object-storage';
 
-const storage = new Client();
+let storage: Client | null = null;
+
+// Initialize storage client with error handling
+try {
+  storage = new Client();
+} catch (error) {
+  console.warn('Object Storage not available:', error);
+}
 
 // Configure multer for file uploads
 const upload = multer({
@@ -243,6 +250,10 @@ export function registerRoutes(app: express.Express): Server {
   // Price Guide Routes using Object Storage
   app.get('/api/price-guide', async (req, res) => {
     try {
+      if (!storage) {
+        return res.json({ exists: false, error: 'Object Storage not available' });
+      }
+
       const { ok, value, error } = await storage.downloadAsText('price-guide/metadata.json');
       
       if (!ok) {
@@ -262,6 +273,10 @@ export function registerRoutes(app: express.Express): Server {
 
   app.post('/api/price-guide', upload.single('pdf'), async (req, res) => {
     try {
+      if (!storage) {
+        return res.status(503).json({ error: 'Object Storage not available' });
+      }
+
       if (!req.file) {
         return res.status(400).json({ error: 'No PDF file uploaded' });
       }
