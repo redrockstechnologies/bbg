@@ -37,14 +37,23 @@ const Admin = () => {
           <div id="admin-dashboard">
             <div className="mb-8 flex justify-between items-center">
               <h2 className="text-2xl">Dashboard</h2>
-              <Button 
-                onClick={logout}
-                variant="outline"
-                className="bg-gray-300 hover:bg-gray-400 text-primary py-2 px-4 rounded-full transition-colors flex items-center gap-2"
-              >
-                <LogOut size={16} />
-                Logout
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={() => window.location.href = '/admin2'}
+                  variant="outline"
+                  className="bg-accent hover:bg-accent/90 text-white py-2 px-4 rounded-full transition-colors"
+                >
+                  Try New Admin Portal
+                </Button>
+                <Button 
+                  onClick={logout}
+                  variant="outline"
+                  className="bg-gray-300 hover:bg-gray-400 text-primary py-2 px-4 rounded-full transition-colors flex items-center gap-2"
+                >
+                  <LogOut size={16} />
+                  Logout
+                </Button>
+              </div>
             </div>
 
             {/* Submenu */}
