@@ -207,7 +207,7 @@ const GearManagement = () => {
   };
   
   return (
-    <div>
+    <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl">Manage Gear Items</h3>
         <Button 

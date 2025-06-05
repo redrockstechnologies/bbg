@@ -1,116 +1,101 @@
-
-import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import LoginForm from "@/components/admin/LoginForm";
-import GearManagement from "@/components/admin/GearManagement";
-import ContactMessagesManagement from "@/components/admin/ContactMessagesManagement";
-import DeliveryRatesManagement from "@/components/admin/DeliveryRatesManagement";
+import React, { useState } from 'react';
+import { Helmet } from 'react-helmet';
+import { useAuth } from '@/context/AuthContext';
+import LoginForm from '@/components/admin/LoginForm';
+import GearManagement from '@/components/admin/GearManagement';
 import TestimonialManagement from "@/components/admin/TestimonialManagement";
+import DeliveryRatesManagement from "@/components/admin/DeliveryRatesManagement";
 import PriceGuideManagement from "@/components/admin/PriceGuideManagement";
-import { ChevronDown, ChevronRight, Package, MessageSquare, Truck, Star, FileText } from "lucide-react";
+import ImagesManagement from "@/components/admin/ImagesManagement";
+import ContactMessagesManagement from "@/components/admin/ContactMessagesManagement";
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
 
 const Admin = () => {
-  const { user } = useAuth();
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    gear: true,
-    priceGuide: false,
-    messages: false,
-    delivery: false,
-    testimonials: false,
-  });
-
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-          <h1 className="text-2xl mb-6 text-center">Admin Login</h1>
-          <LoginForm />
-        </div>
-      </div>
-    );
-  }
-
-  const sections = [
-    {
-      id: 'gear',
-      title: 'Product Management',
-      icon: Package,
-      component: <GearManagement />
-    },
-    {
-      id: 'priceGuide',
-      title: 'Price Guide Management',
-      icon: FileText,
-      component: <PriceGuideManagement />
-    },
-    {
-      id: 'messages',
-      title: 'Contact Messages',
-      icon: MessageSquare,
-      component: <ContactMessagesManagement />
-    },
-    {
-      id: 'delivery',
-      title: 'Delivery Rates',
-      icon: Truck,
-      component: <DeliveryRatesManagement />
-    },
-    {
-      id: 'testimonials',
-      title: 'Testimonials',
-      icon: Star,
-      component: <TestimonialManagement />
-    }
-  ];
+  const { isAuthenticated, logout } = useAuth();
+  const [activeSection, setActiveSection] = useState<'gear' | 'testimonials' | 'images' | 'delivery' | 'contact-messages'>('gear');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-secondary">
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h1 className="text-3xl mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Welcome back! Manage your Ballito Baby Gear content below.</p>
+    <>
+      <Helmet>
+        <title>Admin Portal | Ballito Baby Gear</title>
+        <meta name="description" content="Admin portal for Ballito Baby Gear. Manage baby gear items and testimonials." />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+
+      <div className="container mx-auto px-4 py-10">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl mb-3 font-medium">Admin Portal</h1>
+          <div className="w-24 h-1 bg-accent mx-auto mt-4"></div>
         </div>
 
-        <div className="space-y-6">
-          {sections.map((section) => {
-            const Icon = section.icon;
-            const isExpanded = expandedSections[section.id];
-            
-            return (
-              <div key={section.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <button
-                  onClick={() => toggleSection(section.id)}
-                  className="w-full px-6 py-4 bg-white hover:bg-gray-50 flex items-center justify-between transition-colors border-b border-gray-200"
-                >
-                  <div className="flex items-center space-x-3">
-                    <Icon className="text-accent" size={24} />
-                    <h2 className="text-xl font-medium">{section.title}</h2>
-                  </div>
-                  {isExpanded ? (
-                    <ChevronDown className="text-gray-400" size={20} />
-                  ) : (
-                    <ChevronRight className="text-gray-400" size={20} />
-                  )}
-                </button>
-                
-                {isExpanded && (
-                  <div className="p-6">
-                    {section.component}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        {!isAuthenticated ? (
+          // Login Form
+          <LoginForm />
+        ) : (
+          // Admin Dashboard
+          <div id="admin-dashboard">
+            <div className="mb-8 flex justify-between items-center">
+              <h2 className="text-2xl">Dashboard</h2>
+              <Button 
+                onClick={logout}
+                variant="outline"
+                className="bg-gray-300 hover:bg-gray-400 text-primary py-2 px-4 rounded-full transition-colors flex items-center gap-2"
+              >
+                <LogOut size={16} />
+                Logout
+              </Button>
+            </div>
+
+            {/* Submenu */}
+            <div className="grid grid-cols-2 md:flex md:space-x-4 gap-2 md:gap-0 mb-8 justify-center max-w-4xl mx-auto px-4">
+              <button
+                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'contact-messages' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                onClick={() => setActiveSection('contact-messages')}
+              >
+                Contact Messages
+              </button>
+              <button
+                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'gear' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                onClick={() => setActiveSection('gear')}
+              >
+                Gear Items
+              </button>
+              <button
+                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'testimonials' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                onClick={() => setActiveSection('testimonials')}
+              >
+                Testimonials
+              </button>
+              <button
+                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'images' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                onClick={() => setActiveSection('images')}
+              >
+                Images
+              </button>
+              <button
+                className={`px-3 md:px-6 py-2 rounded-full font-medium transition-colors text-sm md:text-base ${activeSection === 'delivery' ? 'bg-accent text-white' : 'bg-gray-200 text-primary'}`}
+                onClick={() => setActiveSection('delivery')}
+              >
+                Delivery Rates
+              </button>
+            </div>
+
+            {/* Section Content */}
+            {activeSection === 'contact-messages' && <ContactMessagesManagement />}
+            {activeSection === 'gear' && (
+              <>
+                <GearManagement />
+                <PriceGuideManagement />
+              </>
+            )}
+            {activeSection === 'testimonials' && <TestimonialManagement />}
+            {activeSection === 'images' && <ImagesManagement />}
+            {activeSection === 'delivery' && <DeliveryRatesManagement />}
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 };
 

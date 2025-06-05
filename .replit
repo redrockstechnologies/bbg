@@ -9,9 +9,6 @@ channel = "stable-24_05"
 deploymentTarget = "autoscale"
 run = ["sh", "-c", "npm run dev"]
 
-[objectStorage]
-defaultBucketID = "replit-objstore-default"
-
 [[ports]]
 localPort = 3000
 externalPort = 80

@@ -19,7 +19,7 @@ const ContactInfo = () => {
             <Mail className="text-accent mr-3 mt-1" size={20} />
             <div>
               <h3 className="font-medium">Email</h3>
-              <p>hello@ballitobabygear.co.za</p>
+              <p>hello.jmbabysitting@gmail.com</p>
             </div>
           </div>
           
