@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextValue {
@@ -32,7 +34,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = async (email: string, password: string): Promise<{ success: boolean }> => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Save/update user data in Firestore
+      const userDocRef = doc(db, 'users', user.email?.replace('@', '_').replace('.', '_') || user.uid);
+      await setDoc(userDocRef, {
+        email: user.email,
+        displayName: user.displayName || user.email?.split('@')[0] || 'Admin',
+        company: 'Ballito Baby Gear', // Default company
+        privileges: ['dashboard', 'inventory', 'testimonials', 'rates', 'contact-messages', 'settings'], // Default privileges
+        lastSignIn: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, { merge: true }); // merge: true ensures we don't overwrite existing data
       
       toast({
         title: "Login successful",

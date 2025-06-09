@@ -1,38 +1,38 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings, Users, Image, FileText, Plus, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import ImagesManagement from '@/components/admin/ImagesManagement';
+import { getAuth } from 'firebase/auth';
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 interface User {
-  id: number;
+  id: string;
   email: string;
-  firstName: string;
+  displayName: string;
   company: string;
   privileges: string[];
+  createdAt?: Date;
+  lastSignIn?: Date;
 }
 
 const Settings2 = () => {
   const [activeTab, setActiveTab] = useState<'users' | 'images' | 'price-guide'>('users');
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      email: 'admin@ballitobabygear.com',
-      firstName: 'Admin',
-      company: 'Ballito Baby Gear',
-      privileges: ['dashboard', 'inventory', 'testimonials', 'rates', 'contact-messages', 'settings']
-    }
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
   const [priceGuideLink, setPriceGuideLink] = useState('');
   const [isAddingUser, setIsAddingUser] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [newUser, setNewUser] = useState({
     email: '',
-    firstName: '',
+    displayName: '',
     company: '',
     privileges: [] as string[]
   });
+  const { toast } = useToast();
 
   const privilegeOptions = [
     { id: 'dashboard', label: 'Dashboard' },
@@ -44,20 +44,97 @@ const Settings2 = () => {
     { id: 'settings', label: 'Settings' }
   ];
 
-  const handleAddUser = () => {
-    if (newUser.email && newUser.firstName) {
-      const user: User = {
-        id: Date.now(),
-        ...newUser
-      };
-      setUsers([...users, user]);
-      setNewUser({ email: '', firstName: '', company: '', privileges: [] });
-      setIsAddingUser(false);
+  // Fetch Firebase Auth users and their additional data from Firestore
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const auth = getAuth();
+      
+      // Fetch user data from Firestore (we'll store additional user metadata there)
+      const usersCollection = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersCollection);
+      
+      const fetchedUsers: User[] = [];
+      usersSnapshot.forEach((doc) => {
+        const userData = doc.data();
+        fetchedUsers.push({
+          id: doc.id,
+          email: userData.email || '',
+          displayName: userData.displayName || userData.firstName || 'Unknown',
+          company: userData.company || '',
+          privileges: userData.privileges || [],
+          createdAt: userData.createdAt?.toDate(),
+          lastSignIn: userData.lastSignIn?.toDate()
+        });
+      });
+      
+      setUsers(fetchedUsers);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch users',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteUser = (id: number) => {
-    setUsers(users.filter(user => user.id !== id));
+  const handleAddUser = async () => {
+    if (newUser.email && newUser.displayName) {
+      try {
+        // Create user document in Firestore
+        const userDocRef = doc(db, 'users', newUser.email.replace('@', '_').replace('.', '_'));
+        await setDoc(userDocRef, {
+          email: newUser.email,
+          displayName: newUser.displayName,
+          company: newUser.company,
+          privileges: newUser.privileges,
+          createdAt: new Date(),
+          lastSignIn: null
+        });
+
+        toast({
+          title: 'Success',
+          description: 'User added successfully',
+        });
+
+        // Refresh users list
+        await fetchUsers();
+        setNewUser({ email: '', displayName: '', company: '', privileges: [] });
+        setIsAddingUser(false);
+      } catch (error) {
+        console.error('Error adding user:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to add user',
+          variant: 'destructive'
+        });
+      }
+    }
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'users', id));
+      toast({
+        title: 'Success',
+        description: 'User deleted successfully',
+      });
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete user',
+        variant: 'destructive'
+      });
+    }
   };
 
   const togglePrivilege = (privilege: string) => {
@@ -143,12 +220,12 @@ const Settings2 = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                    First Name
+                    Display Name
                   </label>
                   <Input
-                    value={newUser.firstName}
-                    onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
-                    placeholder="John"
+                    value={newUser.displayName}
+                    onChange={(e) => setNewUser({ ...newUser, displayName: e.target.value })}
+                    placeholder="John Doe"
                   />
                 </div>
               </div>
@@ -203,75 +280,101 @@ const Settings2 = () => {
 
           {/* Users list */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                    Company
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                    Privileges
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                          {user.firstName}
-                        </div>
-                        <div className="text-sm text-gray-500" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                          {user.email}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: 'Figtree, sans-serif' }}>
-                      {user.company}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {user.privileges.map((privilege) => (
-                          <span
-                            key={privilege}
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent"
-                            style={{ fontFamily: 'Figtree, sans-serif' }}
-                          >
-                            {privilegeOptions.find(p => p.id === privilege)?.label}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-gray-600 hover:text-gray-900"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
+            {loading ? (
+              <div className="p-6 text-center">
+                <p style={{ fontFamily: 'Figtree, sans-serif' }}>Loading users...</p>
+              </div>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                      Company
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                      Privileges
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                      Last Sign In
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {users.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-4 text-center text-gray-500" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                        No users found. Add the first user to get started.
+                      </td>
+                    </tr>
+                  ) : (
+                    users.map((user) => (
+                      <tr key={user.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                              {user.displayName}
+                            </div>
+                            <div className="text-sm text-gray-500" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                              {user.email}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                          {user.company || '-'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-1">
+                            {user.privileges.length > 0 ? (
+                              user.privileges.map((privilege) => (
+                                <span
+                                  key={privilege}
+                                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent"
+                                  style={{ fontFamily: 'Figtree, sans-serif' }}
+                                >
+                                  {privilegeOptions.find(p => p.id === privilege)?.label}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-xs text-gray-400" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                                No privileges assigned
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                          {user.lastSignIn ? user.lastSignIn.toLocaleDateString() : 'Never'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-gray-600 hover:text-gray-900"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteUser(user.id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       )}
