@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/lib/firebase";
+import { storage, db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 
 import {
@@ -18,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Download, Upload } from "lucide-react";
 
 // Schema for price guide
@@ -36,6 +38,7 @@ type PriceGuide = PriceGuideFormValues & {
 
 const PriceGuideManagement = () => {
   const [priceGuide, setPriceGuide] = useState<PriceGuide | null>(null);
+  const [showPriceGuide, setShowPriceGuide] = useState(true);
   const [loading, setLoading] = useState(true);
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,7 +69,7 @@ const PriceGuideManagement = () => {
     }
   }, [priceGuide, form]);
   
-  // Fetch price guide from API
+  // Fetch price guide from API and visibility setting from Firebase
   const fetchPriceGuide = async () => {
     try {
       const response = await fetch("/api/price-guide");
@@ -74,6 +77,15 @@ const PriceGuideManagement = () => {
         const data = await response.json();
         setPriceGuide(data);
       }
+
+      // Fetch visibility setting from Firebase
+      const settingsDoc = doc(db, 'settings', 'priceGuide');
+      const settingsSnapshot = await getDoc(settingsDoc);
+      if (settingsSnapshot.exists()) {
+        const settingsData = settingsSnapshot.data();
+        setShowPriceGuide(settingsData.showPriceGuide !== false); // default to true if not set
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error("Error fetching price guide:", error);
@@ -159,6 +171,27 @@ const PriceGuideManagement = () => {
       window.open(priceGuide.fileUrl, '_blank');
     }
   };
+
+  // Handle visibility toggle
+  const handleToggleVisibility = async (checked: boolean) => {
+    try {
+      const settingsDoc = doc(db, 'settings', 'priceGuide');
+      await setDoc(settingsDoc, { showPriceGuide: checked }, { merge: true });
+      setShowPriceGuide(checked);
+      
+      toast({
+        title: "Success",
+        description: `Price guide ${checked ? 'shown' : 'hidden'} on website`,
+      });
+    } catch (error) {
+      console.error("Error updating visibility:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update visibility setting",
+        variant: "destructive",
+      });
+    }
+  };
   
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
@@ -177,8 +210,24 @@ const PriceGuideManagement = () => {
       {loading ? (
         <div className="text-center py-8">Loading...</div>
       ) : (
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <Form {...form}>
+        <div className="space-y-6">
+          {/* Visibility Toggle */}
+          <div className="bg-white rounded-lg p-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-lg font-medium">Price Guide Visibility</h4>
+                <p className="text-sm text-gray-600">Control whether the price guide section appears on the Our Gear page</p>
+              </div>
+              <Switch
+                checked={showPriceGuide}
+                onCheckedChange={handleToggleVisibility}
+              />
+            </div>
+          </div>
+
+          {/* Price Guide Form */}
+          <div className="bg-white rounded-lg p-6 border border-gray-200">
+            <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
@@ -248,6 +297,7 @@ const PriceGuideManagement = () => {
               </div>
             </form>
           </Form>
+          </div>
         </div>
       )}
     </div>
