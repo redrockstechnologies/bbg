@@ -7,7 +7,7 @@ import { collection, getDocs, doc, updateDoc, orderBy, query } from "firebase/fi
 import { db } from "@/lib/firebase";
 
 interface ContactMessage {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -41,7 +41,7 @@ const ContactMessagesManagement = () => {
       messagesSnapshot.forEach((doc) => {
         const data = doc.data();
         messages.push({
-          id: parseInt(doc.id) || Math.random(), // Fallback for non-numeric IDs
+          id: doc.id, // Use actual Firebase document ID
           name: data.name || '',
           email: data.email || '',
           phone: data.phone || '',
@@ -68,9 +68,9 @@ const ContactMessagesManagement = () => {
     }
   };
 
-  const archiveMessage = async (messageId: number) => {
+  const archiveMessage = async (messageId: string) => {
     try {
-      const messageDoc = doc(db, 'contactMessages', messageId.toString());
+      const messageDoc = doc(db, 'contactMessages', messageId);
       await updateDoc(messageDoc, {
         archived: true
       });
