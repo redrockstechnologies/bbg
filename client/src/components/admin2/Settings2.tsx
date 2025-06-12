@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Settings, Users, Image, FileText, Plus, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import ImagesManagement from '@/components/admin/ImagesManagement';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { Switch } from '@/components/ui/switch';
 
 interface User {
   id: string;
@@ -33,6 +33,7 @@ const Settings2 = () => {
     privileges: [] as string[]
   });
   const { toast } = useToast();
+  const [showPriceGuide, setShowPriceGuide] = useState(true);
 
   const privilegeOptions = [
     { id: 'dashboard', label: 'Dashboard' },
@@ -49,15 +50,19 @@ const Settings2 = () => {
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    fetchPriceGuideSettings();
+  }, []);
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
       const auth = getAuth();
-      
+
       // Fetch user data from Firestore (we'll store additional user metadata there)
       const usersCollection = collection(db, 'users');
       const usersSnapshot = await getDocs(usersCollection);
-      
+
       const fetchedUsers: User[] = [];
       usersSnapshot.forEach((doc) => {
         const userData = doc.data();
@@ -71,7 +76,7 @@ const Settings2 = () => {
           lastSignIn: userData.lastSignIn?.toDate()
         });
       });
-      
+
       setUsers(fetchedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -151,6 +156,43 @@ const Settings2 = () => {
     { id: 'images', label: 'Images', icon: Image },
     { id: 'price-guide', label: 'Price Guide', icon: FileText }
   ];
+
+  const fetchPriceGuideSettings = async () => {
+    try {
+      const settingsDoc = doc(db, 'settings', 'priceGuide');
+      const settingsSnapshot = await getDoc(settingsDoc);
+      if (settingsSnapshot.exists()) {
+        const data = settingsSnapshot.data();
+        setPriceGuideLink(data.link || '');
+        setShowPriceGuide(data.showPriceGuide !== false); // default to true if not set
+      }
+    } catch (error) {
+      console.error('Error fetching price guide settings:', error);
+    }
+  };
+
+  const updatePriceGuideSettings = async () => {
+    try {
+      const settingsDoc = doc(db, 'settings', 'priceGuide');
+      await setDoc(settingsDoc, {
+        link: priceGuideLink,
+        showPriceGuide: showPriceGuide,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      toast({
+        title: "Success",
+        description: "Price guide settings updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating price guide settings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update price guide settings",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -403,9 +445,17 @@ const Settings2 = () => {
               Set the link for your price guide PDF
             </p>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow p-6">
             <div className="space-y-4">
+
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-700" style={{ fontFamily: 'Figtree, sans-serif' }}>
+                  Show Price Guide
+                </label>
+                <Switch checked={showPriceGuide} onCheckedChange={setShowPriceGuide} />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'Figtree, sans-serif' }}>
                   Price Guide PDF Link
@@ -421,13 +471,14 @@ const Settings2 = () => {
                   Enter the direct link to your price guide PDF. This will be used when customers click the download button.
                 </p>
               </div>
-              
+
               <div className="flex justify-end">
-                <Button 
+                <Button
+                  onClick={updatePriceGuideSettings}
                   className="bg-accent hover:bg-accent/90"
                   style={{ fontFamily: 'Figtree, sans-serif' }}
                 >
-                  Save Link
+                  Save Price Guide Settings
                 </Button>
               </div>
             </div>

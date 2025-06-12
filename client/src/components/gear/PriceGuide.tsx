@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 type PriceGuide = {
   id: number;
@@ -12,24 +14,34 @@ type PriceGuide = {
 
 const PriceGuide = () => {
   const [priceGuide, setPriceGuide] = useState<PriceGuide | null>(null);
+  const [showPriceGuide, setShowPriceGuide] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPriceGuide = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch price guide data
         const response = await fetch("/api/price-guide");
         if (response.ok) {
           const data = await response.json();
           setPriceGuide(data);
         }
+
+        // Fetch visibility setting from Firebase
+        const settingsDoc = doc(db, 'settings', 'priceGuide');
+        const settingsSnapshot = await getDoc(settingsDoc);
+        if (settingsSnapshot.exists()) {
+          const settingsData = settingsSnapshot.data();
+          setShowPriceGuide(settingsData.showPriceGuide !== false); // default to true if not set
+        }
       } catch (error) {
-        console.error("Error fetching price guide:", error);
+        console.error("Error fetching price guide data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPriceGuide();
+    fetchData();
   }, []);
 
   const handleDownload = () => {
@@ -51,7 +63,7 @@ const PriceGuide = () => {
     );
   }
 
-  if (!priceGuide) return null;
+  if (!priceGuide || !showPriceGuide) return null;
 
   return (
     <section id="price-guide" className="mb-16 mt-20">
