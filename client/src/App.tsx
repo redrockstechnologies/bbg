@@ -10,7 +10,6 @@ import Home from "@/pages/Home";
 import Gear from "@/pages/Gear";
 import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
-import Admin2 from "@/pages/Admin2";
 import { EnquiryProvider } from "./context/EnquiryContext";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -21,7 +20,6 @@ function Router() {
       <Route path="/gear" component={Gear} />
       <Route path="/contact" component={Contact} />
       <Route path="/admin" component={Admin} />
-      <Route path="/admin2" component={Admin2} />
       <Route component={NotFound} />
     </Switch>
   );
