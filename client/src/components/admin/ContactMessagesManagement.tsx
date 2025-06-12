@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, Calendar, User, MessageCircle, Package, Archive, MessageSquare } from "lucide-react";
+import { collection, getDocs, doc, updateDoc, orderBy, query } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface ContactMessage {
   id: number;
@@ -30,21 +32,35 @@ const ContactMessagesManagement = () => {
 
   const fetchContactMessages = async () => {
     try {
-      const response = await fetch("/api/contact");
-      if (response.ok) {
-        const data = await response.json();
-        // Sort by oldest first (createdAt ascending)
-        setContactMessages(data.sort((a: ContactMessage, b: ContactMessage) => {
-          const dateA = new Date(a.createdAt || 0).getTime();
-          const dateB = new Date(b.createdAt || 0).getTime();
-          return dateA - dateB;
-        }));
-      }
+      console.log("Fetching contact messages from Firebase...");
+      const messagesCollection = collection(db, 'contactMessages');
+      const messagesQuery = query(messagesCollection, orderBy('createdAt', 'asc'));
+      const messagesSnapshot = await getDocs(messagesQuery);
+      
+      const messages: ContactMessage[] = [];
+      messagesSnapshot.forEach((doc) => {
+        const data = doc.data();
+        messages.push({
+          id: parseInt(doc.id) || Math.random(), // Fallback for non-numeric IDs
+          name: data.name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          arrivalDate: data.arrivalDate || undefined,
+          departureDate: data.departureDate || undefined,
+          message: data.message || '',
+          enquiryItems: data.enquiryItems || undefined,
+          archived: data.archived || false,
+          createdAt: data.createdAt || undefined
+        });
+      });
+      
+      console.log("Fetched messages:", messages);
+      setContactMessages(messages);
     } catch (error) {
-      console.error("Error fetching contact messages:", error);
+      console.error("Error fetching contact messages from Firebase:", error);
       toast({
         title: "Error",
-        description: "Failed to load contact messages",
+        description: "Failed to load contact messages from Firebase",
         variant: "destructive",
       });
     } finally {
@@ -54,17 +70,16 @@ const ContactMessagesManagement = () => {
 
   const archiveMessage = async (messageId: number) => {
     try {
-      const response = await fetch(`/api/contact/${messageId}/archive`, {
-        method: 'PATCH',
+      const messageDoc = doc(db, 'contactMessages', messageId.toString());
+      await updateDoc(messageDoc, {
+        archived: true
       });
       
-      if (response.ok) {
-        fetchContactMessages();
-        toast({
-          title: "Success",
-          description: "Message archived successfully",
-        });
-      }
+      fetchContactMessages();
+      toast({
+        title: "Success",
+        description: "Message archived successfully",
+      });
     } catch (error) {
       console.error("Error archiving message:", error);
       toast({

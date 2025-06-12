@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEnquiry } from "@/context/EnquiryContext";
 import { useToast } from "@/hooks/use-toast";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 import {
   Form,
@@ -54,7 +56,7 @@ const ContactForm = () => {
         `${item.ItemType} for ${item.DayCost} per day; ${item.WeekCost} per week`
       ).join('\n');
       
-      // Submit to backend API
+      // Submit directly to Firebase
       const contactData = {
         name: data.name,
         email: data.email,
@@ -63,19 +65,14 @@ const ContactForm = () => {
         departureDate: data.departureDate || null,
         message: data.message,
         enquiryItems: formattedEnquiryItems || null,
+        archived: false,
+        createdAt: serverTimestamp()
       };
 
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(contactData),
-      });
+      console.log("Submitting to Firebase:", contactData);
       
-      if (!response.ok) {
-        throw new Error("Failed to submit form");
-      }
+      const docRef = await addDoc(collection(db, 'contactMessages'), contactData);
+      console.log("Document written with ID: ", docRef.id);
       
       // Reset form and enquiry
       form.reset();
@@ -90,7 +87,7 @@ const ContactForm = () => {
         duration: 5000,
       });
     } catch (error) {
-      console.error("Error submitting message:", error);
+      console.error("Error submitting message to Firebase:", error);
       toast({
         title: "Error sending message",
         description: "Something went wrong. Please try again.",

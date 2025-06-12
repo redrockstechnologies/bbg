@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertGearItemSchema, insertTestimonialSchema, insertContactMessageSchema, insertDeliveryRateSchema, insertPriceGuideSchema } from "@shared/schema";
+import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
@@ -173,20 +174,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/contact", async (req, res) => {
     try {
+      console.log("Received contact form data:", req.body);
+      
       const messageData = {
-        ...req.body,
+        name: req.body.name,
+        email: req.body.email,
+        phone: req.body.phone,
+        arrivalDate: req.body.arrivalDate || null,
+        departureDate: req.body.departureDate || null,
+        message: req.body.message,
+        enquiryItems: req.body.enquiryItems || null,
         createdAt: new Date().toISOString(),
         archived: false
       };
+      
+      console.log("Formatted message data:", messageData);
+      
       const parsed = insertContactMessageSchema.parse(messageData);
       const message = await storage.createContactMessage(parsed);
+      
+      console.log("Contact message created successfully:", message);
       res.status(201).json(message);
     } catch (error) {
       console.error("Error creating contact message:", error);
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: error.errors });
+        console.error("Validation errors:", error.errors);
+        res.status(400).json({ error: "Validation failed", details: error.errors });
       } else {
-        res.status(500).json({ error: "Failed to create contact message" });
+        console.error("Server error:", error);
+        res.status(500).json({ error: "Failed to create contact message", details: error.message });
       }
     }
   });
