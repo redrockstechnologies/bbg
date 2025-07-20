@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { emailService } from "./emailService";
 import { insertUserSchema, insertGearItemSchema, insertTestimonialSchema, insertContactMessageSchema, insertDeliveryRateSchema, insertPriceGuideSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -192,6 +193,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const parsed = insertContactMessageSchema.parse(messageData);
       const message = await storage.createContactMessage(parsed);
+      
+      // Send email notification
+      try {
+        await emailService.sendContactNotification({
+          name: messageData.name,
+          email: messageData.email,
+          phone: messageData.phone,
+          message: messageData.message,
+          arrivalDate: messageData.arrivalDate || undefined,
+          departureDate: messageData.departureDate || undefined,
+          enquiryItems: messageData.enquiryItems || undefined
+        });
+        console.log("Email notification sent successfully");
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
+        // Don't fail the request if email fails
+      }
       
       console.log("Contact message created successfully:", message);
       res.status(201).json(message);
