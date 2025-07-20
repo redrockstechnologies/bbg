@@ -4,8 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEnquiry } from "@/context/EnquiryContext";
 import { useToast } from "@/hooks/use-toast";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 import {
   Form,
@@ -56,7 +54,7 @@ const ContactForm = () => {
         `${item.ItemType} for ${item.DayCost} per day; ${item.WeekCost} per week`
       ).join('\n');
       
-      // Submit directly to Firebase
+      // Submit to API route for email notifications
       const contactData = {
         name: data.name,
         email: data.email,
@@ -64,15 +62,25 @@ const ContactForm = () => {
         arrivalDate: data.arrivalDate || null,
         departureDate: data.departureDate || null,
         message: data.message,
-        enquiryItems: formattedEnquiryItems || null,
-        archived: false,
-        createdAt: serverTimestamp()
+        enquiryItems: formattedEnquiryItems || null
       };
 
-      console.log("Submitting to Firebase:", contactData);
+      console.log("Submitting to API:", contactData);
       
-      const docRef = await addDoc(collection(db, 'contactMessages'), contactData);
-      console.log("Document written with ID: ", docRef.id);
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit contact form');
+      }
+
+      const result = await response.json();
+      console.log("Contact message submitted:", result);
       
       // Reset form and enquiry
       form.reset();
