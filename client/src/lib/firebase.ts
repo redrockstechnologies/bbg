@@ -4,13 +4,13 @@ import { getStorage } from "firebase/storage";
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDFqw6BdP2DADQJAmphozyoeoGf6Zs-pnw",
-  authDomain: "gearout3.firebaseapp.com",
-  projectId: "gearout3",
-  storageBucket: "gearout3.firebasestorage.app",
-  messagingSenderId: "512167153796",
-  appId: "1:512167153796:web:d920ba6859b0490176b2d1",
-  measurementId: "G-RLJ1F6CDD9"
+  apiKey: "AIzaSyAYlYYs49J2v1jt_tmyL5Q2jKcWRrlE4pI",
+  authDomain: "bbg-trax.firebaseapp.com",
+  projectId: "bbg-trax",
+  storageBucket: "bbg-trax.firebasestorage.app",
+  messagingSenderId: "144130990598",
+  appId: "1:144130990598:web:0258ed4dee2e0d30e79987",
+  measurementId: "G-W4WDQH635D"
 };
 
 // Initialize Firebase
