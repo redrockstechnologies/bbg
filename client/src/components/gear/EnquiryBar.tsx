@@ -68,10 +68,12 @@ const EnquiryBar = () => {
             <div className="max-h-48 overflow-y-auto">
               {enquiryItems.map((item) => (
                 <div key={item.id} className="flex justify-between items-center mb-2 pb-2 border-b border-gray-100">
-                  <span>{item.ItemType}</span>
+                  <span>{item.title}</span>
                   <div className="flex space-x-4">
-                    <span>Daily: {item.DayCost}</span>
-                    <span>Weekly: {item.WeekCost}</span>
+                    <span>Daily: R{item.dailyPrice}</span>
+                    {item.weeklyPrice !== null && (
+                      <span>Weekly: R{item.weeklyPrice}</span>
+                    )}
                   </div>
                 </div>
               ))}

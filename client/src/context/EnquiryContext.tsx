@@ -4,11 +4,12 @@ import { useToast } from '@/hooks/use-toast';
 // Type for gear item in enquiry
 export type EnquiryItem = {
   id: string;
-  ItemType: string;
-  DayCost: string;
-  WeekCost: string;
-  AdditionalDeets?: string;
-  ImageUrl?: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  dailyPrice: number;
+  weeklyPrice: number | null;
+  isActive: boolean;
 };
 
 // Interface for the context value
@@ -37,7 +38,7 @@ export const EnquiryProvider = ({ children }: EnquiryProviderProps) => {
     if (isItemInEnquiry(item.id)) {
       toast({
         title: "Already in enquiry",
-        description: `${item.ItemType} is already in your enquiry.`,
+        description: `${item.title} is already in your enquiry.`,
         duration: 3000,
       });
       return;
@@ -47,7 +48,7 @@ export const EnquiryProvider = ({ children }: EnquiryProviderProps) => {
     
     toast({
       title: "Added to enquiry",
-      description: `${item.ItemType} has been added to your enquiry.`,
+      description: `${item.title} has been added to your enquiry.`,
       duration: 2000,
     });
   };

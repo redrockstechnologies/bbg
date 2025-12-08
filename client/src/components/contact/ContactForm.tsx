@@ -50,9 +50,10 @@ const ContactForm = () => {
     
     try {
       // Format enquiry items as a readable string
-      const formattedEnquiryItems = enquiryItems.map(item => 
-        `${item.ItemType} for ${item.DayCost} per day; ${item.WeekCost} per week`
-      ).join('\n');
+      const formattedEnquiryItems = enquiryItems.map(item => {
+        const weeklyInfo = item.weeklyPrice !== null ? `; R${item.weeklyPrice} per week` : '';
+        return `${item.title} for R${item.dailyPrice} per day${weeklyInfo}`;
+      }).join('\n');
       
       // Submit to API route for email notifications
       const contactData = {
@@ -215,8 +216,16 @@ const ContactForm = () => {
               <div className="bg-card p-4 rounded-lg">
                 {enquiryItems.map((item) => (
                   <div key={item.id} className="flex justify-between items-center mb-2 pb-2 border-b border-white/20">
-                    <span>{item.ItemType}</span>
-                    <span>{item.DayCost}/day</span>
+                    <span>{item.title}</span>
+                    <div className="flex gap-2">
+                      <span>R{item.dailyPrice}/day</span>
+                      {item.weeklyPrice !== null && (
+                        <>
+                          <span>|</span>
+                          <span>R{item.weeklyPrice}/week</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
