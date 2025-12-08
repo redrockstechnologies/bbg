@@ -16,13 +16,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
   phone: z.string().min(10, "Please include country code (e.g., +27 82 467 1910)"),
+  area: z.string().min(2, "Please specify the area you're staying in"),
   arrivalDate: z.string().optional(),
   departureDate: z.string().optional(),
+  needsDelivery: z.boolean().default(false),
+  needsPickup: z.boolean().default(false),
   message: z.string().min(5, "Message must be at least 5 characters"),
 });
 
@@ -39,8 +43,11 @@ const ContactForm = () => {
       name: "",
       email: "",
       phone: "",
+      area: "",
       arrivalDate: "",
       departureDate: "",
+      needsDelivery: false,
+      needsPickup: false,
       message: "",
     },
   });
@@ -60,8 +67,11 @@ const ContactForm = () => {
         name: data.name,
         email: data.email,
         phone: data.phone,
+        area: data.area,
         arrivalDate: data.arrivalDate || null,
         departureDate: data.departureDate || null,
+        needsDelivery: data.needsDelivery,
+        needsPickup: data.needsPickup,
         message: data.message,
         enquiryItems: formattedEnquiryItems || null
       };
@@ -161,6 +171,24 @@ const ContactForm = () => {
             )}
           />
           
+          <FormField
+            control={form.control}
+            name="area"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Area you're staying in</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="e.g., Ballito, Salt Rock, Sheffield Beach"
+                    className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -189,6 +217,54 @@ const ContactForm = () => {
                 </FormItem>
               )}
             />
+          </div>
+          
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Select your delivery and pickup preferences. These services may be at an added cost - review rates on the <a href="/gear" className="text-accent underline">Our Gear</a> page.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="needsDelivery"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        I need delivery
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="needsPickup"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        I need pickup
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
           
           <FormField
