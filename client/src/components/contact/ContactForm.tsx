@@ -56,29 +56,50 @@ const ContactForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Format enquiry items as a readable string
-      const formattedEnquiryItems = enquiryItems.map(item => {
-        const weeklyInfo = item.weeklyPrice !== null ? `; R${item.weeklyPrice} per week` : '';
-        return `${item.title} for R${item.dailyPrice} per day${weeklyInfo}`;
-      }).join('\n');
+      // Format message as HTML
+      let htmlMessage = `
+        <h2>Contact Form Submission</h2>
+        <p><strong>Name:</strong> ${data.name}</p>
+        <p><strong>Email:</strong> ${data.email}</p>
+        <p><strong>Phone:</strong> ${data.phone}</p>
+        <p><strong>Area:</strong> ${data.area}</p>
+      `;
       
-      // Submit to API route for email notifications
+      if (data.arrivalDate) {
+        htmlMessage += `<p><strong>Arrival Date:</strong> ${data.arrivalDate}</p>`;
+      }
+      
+      if (data.departureDate) {
+        htmlMessage += `<p><strong>Departure Date:</strong> ${data.departureDate}</p>`;
+      }
+      
+      htmlMessage += `<p><strong>Delivery Requested:</strong> ${data.needsDelivery ? 'Yes' : 'No'}</p>`;
+      htmlMessage += `<p><strong>Pickup Requested:</strong> ${data.needsPickup ? 'Yes' : 'No'}</p>`;
+      
+      if (enquiryItems.length > 0) {
+        htmlMessage += `<h3>Enquiry Items:</h3><ul>`;
+        enquiryItems.forEach(item => {
+          const weeklyInfo = item.weeklyPrice !== null ? ` | R${item.weeklyPrice}/week` : '';
+          htmlMessage += `<li>${item.title} - R${item.dailyPrice}/day${weeklyInfo}</li>`;
+        });
+        htmlMessage += `</ul>`;
+      }
+      
+      htmlMessage += `<h3>Message:</h3><p>${data.message.replace(/\n/g, '<br>')}</p>`;
+      
+      // Format data for new API endpoint
       const contactData = {
+        domain: "ballitobabygear.co.za",
         name: data.name,
         email: data.email,
         phone: data.phone,
-        area: data.area,
-        arrivalDate: data.arrivalDate || null,
-        departureDate: data.departureDate || null,
-        needsDelivery: data.needsDelivery,
-        needsPickup: data.needsPickup,
-        message: data.message,
-        enquiryItems: formattedEnquiryItems || null
+        subject: `Contact from ${data.name}`,
+        message: htmlMessage
       };
 
       console.log("Submitting to API:", contactData);
       
-      const response = await fetch('/api/contact', {
+      const response = await fetch('https://notifications.redrockstechnologies.co.za/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
