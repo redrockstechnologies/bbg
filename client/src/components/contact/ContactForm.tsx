@@ -240,6 +240,9 @@ const ContactForm = () => {
                       <FormLabel>
                         I need Delivery
                       </FormLabel>
+                      <p className="text-sm text-gray-500">
+                        We will deliver to your accommodation or the Airport
+                      </p>
                     </div>
                   </FormItem>
                 )}
@@ -260,6 +263,9 @@ const ContactForm = () => {
                       <FormLabel>
                         I need Pickup
                       </FormLabel>
+                      <p className="text-sm text-gray-500">
+                        We will pick the equipment up after your holiday from your accommodation or the Airport
+                      </p>
                     </div>
                   </FormItem>
                 )}
