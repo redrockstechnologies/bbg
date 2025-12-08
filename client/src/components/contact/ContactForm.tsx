@@ -238,7 +238,7 @@ const ContactForm = () => {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>
-                        I need delivery
+                        I need Delivery
                       </FormLabel>
                     </div>
                   </FormItem>
@@ -258,7 +258,7 @@ const ContactForm = () => {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>
-                        I need pickup
+                        I need Pickup
                       </FormLabel>
                     </div>
                   </FormItem>
