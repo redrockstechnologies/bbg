@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useEnquiry } from "@/context/EnquiryContext";
 import { useState } from "react";
@@ -20,7 +21,7 @@ const GearCard = ({ item }: GearCardProps) => {
     setIsAdded(true);
     toast({
       title: "Added to enquiry",
-      description: `${item.ItemType} has been added to your enquiry.`,
+      description: `${item.title} has been added to your enquiry.`,
       duration: 2000,
     });
     
@@ -36,18 +37,22 @@ const GearCard = ({ item }: GearCardProps) => {
       <div className="p-4 flex flex-col items-center">
         <div className="w-40 h-40 rounded-full overflow-hidden mb-4" style={{ backgroundColor: '#FFFFFF' }}>
           <img 
-            src={item.ImageUrl || "https://placehold.co/300x300?text=No+Image"} 
-            alt={item.ItemType} 
+            src={item.imageUrl || "https://placehold.co/300x300?text=No+Image"} 
+            alt={item.title} 
             className="w-full h-full object-cover"
           />
         </div>
-        <h3 className="text-xl mb-2">{item.ItemType}</h3>
+        <h3 className="text-xl mb-2">{item.title}</h3>
         <div className="flex justify-center items-center w-full mb-2 gap-4">
-          <div className="text-lg">Daily: <span className="font-bold">{item.DayCost}</span></div>
-          <span className="mx-2 text-gray-400">|</span>
-          <div className="text-lg">Weekly: <span className="font-bold">{item.WeekCost}</span></div>
+          <div className="text-lg">Daily: <span className="font-bold">R{item.dailyPrice}</span></div>
+          {item.weeklyPrice !== null && (
+            <>
+              <span className="mx-2 text-gray-400">|</span>
+              <div className="text-lg">Weekly: <span className="font-bold">R{item.weeklyPrice}</span></div>
+            </>
+          )}
         </div>
-        <p className="text-sm text-center mb-4">{item.AdditionalDeets}</p>
+        <p className="text-sm text-center mb-4">{item.description}</p>
         <Button 
           onClick={handleAddToEnquiry}
           disabled={alreadyInEnquiry}

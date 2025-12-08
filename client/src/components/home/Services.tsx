@@ -1,41 +1,18 @@
 import { Link } from "wouter";
-import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
 
 const Services = () => {
-  const [servicesImages, setServicesImages] = useState({
-    gear: "https://images.unsplash.com/photo-1600627094888-1957e7797da4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=500&q=80",
-    nappynow: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=500&q=80"
-  });
-
-  useEffect(() => {
-    const fetchServicesImages = async () => {
-      const configRef = doc(db, "config", "siteImages");
-      const configSnap = await getDoc(configRef);
-      if (configSnap.exists()) {
-        const data = configSnap.data();
-        setServicesImages(prev => ({
-          gear: data["services-gear"] || prev.gear,
-          nappynow: data["services-nappynow"] || prev.nappynow
-        }));
-      }
-    };
-    fetchServicesImages();
-  }, []);
-
   return (
     <section className="mb-16">
       <div className="text-center mb-8">
         <h2 className="text-3xl md:text-4xl mb-3 font-medium">Our Services</h2>
         <div className="w-24 h-1 bg-accent mx-auto"></div>
       </div>
-      
+
       <div className="grid md:grid-cols-2 gap-8">
         {/* Baby Gear Rentals Card */}
         <div className="service-card bg-card rounded-lg shadow-lg overflow-hidden transition-all duration-300">
           <img 
-            src={servicesImages.gear}
+            src="/assets/ServiceOne.png"
             alt="Baby Gear Rental Service" 
             className="w-full h-64 object-cover"
           />
@@ -51,11 +28,11 @@ const Services = () => {
             </Link>
           </div>
         </div>
-        
+
         {/* NappyNow Card */}
         <div className="service-card bg-card rounded-lg shadow-lg overflow-hidden transition-all duration-300">
           <img 
-            src={servicesImages.nappynow}
+            src="/assets/ServiceTwo.png"
             alt="NappyNow Delivery Service" 
             className="w-full h-64 object-cover"
           />
