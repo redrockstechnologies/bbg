@@ -56,36 +56,24 @@ const ContactForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Format message as HTML
-      let htmlMessage = `
-        <h2>Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${data.name}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        <p><strong>Phone:</strong> ${data.phone}</p>
-        <p><strong>Area:</strong> ${data.area}</p>
-      `;
-      
-      if (data.arrivalDate) {
-        htmlMessage += `<p><strong>Arrival Date:</strong> ${data.arrivalDate}</p>`;
-      }
-      
-      if (data.departureDate) {
-        htmlMessage += `<p><strong>Departure Date:</strong> ${data.departureDate}</p>`;
-      }
-      
-      htmlMessage += `<p><strong>Delivery Requested:</strong> ${data.needsDelivery ? 'Yes' : 'No'}</p>`;
-      htmlMessage += `<p><strong>Pickup Requested:</strong> ${data.needsPickup ? 'Yes' : 'No'}</p>`;
-      
+      // Format enquiry items as plain text
+      let itemsList = '';
       if (enquiryItems.length > 0) {
-        htmlMessage += `<h3>Enquiry Items:</h3><ul>`;
-        enquiryItems.forEach(item => {
+        itemsList = enquiryItems.map(item => {
           const weeklyInfo = item.weeklyPrice !== null ? ` | R${item.weeklyPrice}/week` : '';
-          htmlMessage += `<li>${item.title} - R${item.dailyPrice}/day${weeklyInfo}</li>`;
-        });
-        htmlMessage += `</ul>`;
+          return `${item.title} - R${item.dailyPrice}/day${weeklyInfo}`;
+        }).join(', ');
       }
       
-      htmlMessage += `<h3>Message:</h3><p>${data.message.replace(/\n/g, '<br>')}</p>`;
+      // Format message as plain text with specified structure
+      const formattedMessage = `
+${data.message}
+
+Area: ${data.area}
+Delivery: ${data.needsDelivery ? 'Yes' : 'No'}
+Pickup: ${data.needsPickup ? 'Yes' : 'No'}
+Items: ${itemsList || 'None'}
+`;
       
       // Format data for new API endpoint
       const contactData = {
@@ -94,7 +82,7 @@ const ContactForm = () => {
         email: data.email,
         phone: data.phone,
         subject: `Contact from ${data.name}`,
-        message: htmlMessage
+        message: formattedMessage.trim()
       };
 
       console.log("Submitting to API:", contactData);
