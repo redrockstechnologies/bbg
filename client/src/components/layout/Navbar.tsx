@@ -23,7 +23,7 @@ const Navbar = () => {
             <Logo className="h-16 cursor-pointer" variant="header" />
           </Link>
         </div>
-        
+
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
           <Link href="/">
@@ -41,13 +41,13 @@ const Navbar = () => {
               Contact Us
             </span>
           </Link>
-          <Link href="/admin">
-            <span className={`text-primary hover:text-accent font-medium py-2 cursor-pointer ${isActive('/admin') ? 'active-tab' : ''}`}>
-              Admin
+          <Link href="/baby-essentials">
+            <span className={`text-primary hover:text-accent font-medium py-2 cursor-pointer ${isActive('/baby-essentials') ? 'active-tab' : ''}`}>
+              Baby Essentials
             </span>
           </Link>
         </div>
-        
+
         {/* Mobile Navigation Toggle */}
         <div className="md:hidden">
           <button onClick={toggleMobileMenu} className="text-primary">
@@ -55,12 +55,12 @@ const Navbar = () => {
           </button>
         </div>
       </div>
-      
+
       {/* Mobile Navigation Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white pb-4 px-4">
           <Link href="/">
-            <span 
+            <span
               className="block py-2 text-primary hover:text-accent font-medium cursor-pointer"
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -68,27 +68,27 @@ const Navbar = () => {
             </span>
           </Link>
           <Link href="/gear">
-            <span 
+            <span
               className="block py-2 text-primary hover:text-accent font-medium cursor-pointer"
               onClick={() => setMobileMenuOpen(false)}
             >
               Our Gear
             </span>
           </Link>
+          <Link href="/baby-essentials">
+            <span
+              className="block py-2 text-primary hover:text-accent font-medium cursor-pointer"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Baby Essentials
+            </span>
+          </Link>
           <Link href="/contact">
-            <span 
+            <span
               className="block py-2 text-primary hover:text-accent font-medium cursor-pointer"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact Us
-            </span>
-          </Link>
-          <Link href="/admin">
-            <span 
-              className="block py-2 text-primary hover:text-accent font-medium cursor-pointer"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Admin
             </span>
           </Link>
         </div>

@@ -9,7 +9,7 @@ import Footer from "@/components/layout/Footer";
 import Home from "@/pages/Home";
 import Gear from "@/pages/Gear";
 import Contact from "@/pages/Contact";
-import Admin from "@/pages/Admin";
+import BabyEssentials from "@/pages/BabyEssentials";
 import { EnquiryProvider } from "./context/EnquiryContext";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -18,8 +18,8 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/gear" component={Gear} />
+      <Route path="/baby-essentials" component={BabyEssentials} />
       <Route path="/contact" component={Contact} />
-      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );
