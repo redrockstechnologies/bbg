@@ -44,7 +44,7 @@ const Navbar = () => {
   return (
     <>
       {/* Desktop Navigation */}
-      <nav className="bg-white shadow-md sticky top-0 z-50 hidden md:block">
+      <nav className="bg-white shadow-md sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center">
             <Link href="/">
@@ -52,7 +52,7 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <div className="flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-6">
             <Link href="/">
               <span className={`text-primary hover:text-accent font-medium py-2 cursor-pointer ${isActive('/') ? 'active-tab' : ''}`}>
                 Home
