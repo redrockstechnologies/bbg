@@ -17,10 +17,10 @@ const Home = () => {
         <meta property="og:url" content="https://ballitobabygear.co.za" />
       </Helmet>
       
-      {/* Hero Section */}
-      <Hero />
-      
       <div className="container mx-auto px-4 py-8">
+        {/* Hero Section */}
+        <Hero />
+        
         {/* About Section */}
         <About />
         
