@@ -12,7 +12,7 @@ interface GearCardProps {
 
 const GearCard = ({ item }: GearCardProps) => {
   const [isAdded, setIsAdded] = useState(false);
-  const { addToEnquiry, isItemInEnquiry } = useEnquiry();
+  const { addToEnquiry, removeFromEnquiry, isItemInEnquiry } = useEnquiry();
   const { toast } = useToast();
   
   const handleAddToEnquiry = () => {
@@ -29,17 +29,21 @@ const GearCard = ({ item }: GearCardProps) => {
       setIsAdded(false);
     }, 2000);
   };
+
+  const handleRemoveFromEnquiry = () => {
+    removeFromEnquiry(item.id);
+  };
   
   const alreadyInEnquiry = isItemInEnquiry(item.id);
   
   // Special styling for promotion cards
   if (item.isPromotion) {
     return (
-      <div className="gear-card bg-card rounded-lg shadow-lg overflow-hidden transition-all duration-300 border-2 border-pink-400 relative">
+      <div className="gear-card bg-card rounded-lg shadow-lg overflow-hidden transition-all duration-300 border-2 border-pink-400 relative flex flex-col">
         <div className="absolute top-2 right-2 bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
           You Found a Promotion
         </div>
-        <div className="p-4 flex flex-col items-center pt-8">
+        <div className="p-4 flex flex-col items-center pt-8 flex-grow">
           <div className="w-40 h-40 rounded-full overflow-hidden mb-4" style={{ backgroundColor: '#FFFFFF' }}>
             <img 
               src={item.imageUrl || "https://placehold.co/300x300?text=No+Image"} 
@@ -52,25 +56,41 @@ const GearCard = ({ item }: GearCardProps) => {
             <div className="text-lg text-pink-600 font-semibold">{item.promotionText}</div>
           </div>
           <p className="text-sm text-center mb-4 text-gray-700">{item.promotionValue}</p>
-          <Button 
-            onClick={handleAddToEnquiry}
-            disabled={alreadyInEnquiry}
-            variant={alreadyInEnquiry ? "outline" : "default"}
-            className={`w-full bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full transition-colors ${
-              alreadyInEnquiry ? "bg-primary" : ""
-            }`}
-          >
-            {isAdded ? (
-              <span className="flex items-center">
-                <Check className="mr-2" size={16} />
-                Added to Enquiry
-              </span>
-            ) : alreadyInEnquiry ? (
-              "Already in Enquiry"
-            ) : (
-              "Add to Enquiry"
-            )}
-          </Button>
+        </div>
+        <div className="p-4 pt-0">
+          {alreadyInEnquiry ? (
+            <div className="flex gap-2 w-full">
+              <Button 
+                disabled
+                variant="outline"
+                className="flex-grow bg-primary text-white"
+              >
+                Already in Enquiry
+              </Button>
+              <Button 
+                onClick={handleRemoveFromEnquiry}
+                variant="destructive"
+                size="icon"
+                className="rounded-full"
+              >
+                ✕
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              onClick={handleAddToEnquiry}
+              className="w-full bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full transition-colors"
+            >
+              {isAdded ? (
+                <span className="flex items-center">
+                  <Check className="mr-2" size={16} />
+                  Added to Enquiry
+                </span>
+              ) : (
+                "Add to Enquiry"
+              )}
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -97,25 +117,39 @@ const GearCard = ({ item }: GearCardProps) => {
           )}
         </div>
         <p className="text-sm text-center mb-4">{item.description}</p>
-        <Button 
-          onClick={handleAddToEnquiry}
-          disabled={alreadyInEnquiry}
-          variant={alreadyInEnquiry ? "outline" : "default"}
-          className={`w-full bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full transition-colors ${
-            alreadyInEnquiry ? "bg-primary" : ""
-          }`}
-        >
-          {isAdded ? (
-            <span className="flex items-center">
-              <Check className="mr-2" size={16} />
-              Added to Enquiry
-            </span>
-          ) : alreadyInEnquiry ? (
-            "Already in Enquiry"
-          ) : (
-            "Add to Enquiry"
-          )}
-        </Button>
+        {alreadyInEnquiry ? (
+          <div className="flex gap-2 w-full">
+            <Button 
+              disabled
+              variant="outline"
+              className="flex-grow bg-primary text-white"
+            >
+              Already in Enquiry
+            </Button>
+            <Button 
+              onClick={handleRemoveFromEnquiry}
+              variant="destructive"
+              size="icon"
+              className="rounded-full"
+            >
+              ✕
+            </Button>
+          </div>
+        ) : (
+          <Button 
+            onClick={handleAddToEnquiry}
+            className="w-full bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full transition-colors"
+          >
+            {isAdded ? (
+              <span className="flex items-center">
+                <Check className="mr-2" size={16} />
+                Added to Enquiry
+              </span>
+            ) : (
+              "Add to Enquiry"
+            )}
+          </Button>
+        )}
       </div>
     </div>
   );
