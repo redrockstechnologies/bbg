@@ -55,8 +55,13 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link href="/baby-essentials">
+                  <span className="hover:text-accent transition-colors cursor-pointer">Baby Essentials</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact">
-                  <span className="hover:text-accent transition-colors cursor-pointer">Contact Us</span>
+                  <span className="hover:text-accent transition-colors cursor-pointer">Contact</span>
                 </Link>
               </li>
               <li>
