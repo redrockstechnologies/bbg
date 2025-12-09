@@ -34,8 +34,7 @@ const Gear = () => {
         {/* Delivery Rates Component */}
         <DeliveryRates />
         
-        {/* Price Guide Component */}
-        <PriceGuide />
+        
         
         {/* Enquiry Bar Component */}
         <EnquiryBar />

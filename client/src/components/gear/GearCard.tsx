@@ -63,7 +63,7 @@ const GearCard = ({ item }: GearCardProps) => {
               <Button 
                 disabled
                 variant="outline"
-                className="flex-grow bg-primary text-white"
+                className="flex-grow bg-primary text-white rounded-full"
               >
                 Already in Enquiry
               </Button>
@@ -87,7 +87,7 @@ const GearCard = ({ item }: GearCardProps) => {
                   Added to Enquiry
                 </span>
               ) : (
-                "Add to Enquiry"
+                "Get this Saving"
               )}
             </Button>
           )}
@@ -122,7 +122,7 @@ const GearCard = ({ item }: GearCardProps) => {
             <Button 
               disabled
               variant="outline"
-              className="flex-grow bg-primary text-white"
+              className="flex-grow bg-primary text-white rounded-full"
             >
               Already in Enquiry
             </Button>

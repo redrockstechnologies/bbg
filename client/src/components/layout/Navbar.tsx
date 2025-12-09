@@ -33,7 +33,7 @@ const Navbar = () => {
           </Link>
           <Link href="/gear">
             <span className={`text-primary hover:text-accent font-medium py-2 cursor-pointer ${isActive('/gear') ? 'active-tab' : ''}`}>
-              Our Gear
+              Baby Gear
             </span>
           </Link>
           <Link href="/contact">
