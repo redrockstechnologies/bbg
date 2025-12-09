@@ -35,7 +35,7 @@ const GearCard = ({ item }: GearCardProps) => {
   // Special styling for promotion cards
   if (item.isPromotion) {
     return (
-      <div className="gear-card bg-pink-50 rounded-lg shadow-lg overflow-hidden transition-all duration-300 border-2 border-pink-400 relative">
+      <div className="gear-card bg-card rounded-lg shadow-lg overflow-hidden transition-all duration-300 border-2 border-pink-400 relative">
         <div className="absolute top-2 right-2 bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
           You Found a Promotion
         </div>
@@ -52,6 +52,25 @@ const GearCard = ({ item }: GearCardProps) => {
             <div className="text-lg text-pink-600 font-semibold">{item.promotionText}</div>
           </div>
           <p className="text-sm text-center mb-4 text-gray-700">{item.promotionValue}</p>
+          <Button 
+            onClick={handleAddToEnquiry}
+            disabled={alreadyInEnquiry}
+            variant={alreadyInEnquiry ? "outline" : "default"}
+            className={`w-full bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full transition-colors ${
+              alreadyInEnquiry ? "bg-primary" : ""
+            }`}
+          >
+            {isAdded ? (
+              <span className="flex items-center">
+                <Check className="mr-2" size={16} />
+                Added to Enquiry
+              </span>
+            ) : alreadyInEnquiry ? (
+              "Already in Enquiry"
+            ) : (
+              "Add to Enquiry"
+            )}
+          </Button>
         </div>
       </div>
     );
