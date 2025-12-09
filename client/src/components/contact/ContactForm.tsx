@@ -185,11 +185,11 @@ Items: ${itemsList || 'None'}
             name="area"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>In what area are you staying in?</FormLabel>
+                <FormLabel>Accommodation Address</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="e.g., Ballito, Salt Rock, Sheffield Beach"
+                    placeholder="e.g., Apt 12, The Beach Club Resort, 18 Norton Road"
                     className="w-full p-3 rounded-lg border border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent outline-none" 
                   />
                 </FormControl>

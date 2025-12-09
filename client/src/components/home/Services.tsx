@@ -37,13 +37,13 @@ const Services = () => {
             className="w-full h-64 object-cover"
           />
           <div className="p-6">
-            <h3 className="text-2xl mb-3">NappyNow</h3>
+            <h3 className="text-2xl mb-3">Baby Essentials</h3>
             <p className="mb-5">
-              Need nappies, wipes, or other baby essentials delivered right to your doorstep? Our NappyNow service has you covered.
+              Need nappies, wipes, or other baby essentials delivered right to your doorstep? Our Baby Essentials service has you covered.
             </p>
-            <Link href="/gear#price-guide">
+            <Link href="/baby-essentials">
               <span className="bg-accent hover:bg-accent/90 text-white py-2 px-6 rounded-full inline-block transition-colors cursor-pointer">
-                View in Price Guide
+                Shop Our Essentials
               </span>
             </Link>
           </div>
