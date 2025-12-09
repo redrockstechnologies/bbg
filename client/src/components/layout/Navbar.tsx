@@ -80,7 +80,7 @@ const Navbar = () => {
       {/* Mobile Navigation - BubbleMenu */}
       <div className="md:hidden">
         <BubbleMenu
-          logo={<Logo className="h-10" variant="header" />}
+          //logo={<Logo/>}
           items={menuItems}
           menuAriaLabel="Toggle navigation"
           menuBg="hsl(345, 100%, 97%)"
