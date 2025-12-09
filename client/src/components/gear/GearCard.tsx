@@ -32,6 +32,31 @@ const GearCard = ({ item }: GearCardProps) => {
   
   const alreadyInEnquiry = isItemInEnquiry(item.id);
   
+  // Special styling for promotion cards
+  if (item.isPromotion) {
+    return (
+      <div className="gear-card bg-pink-50 rounded-lg shadow-lg overflow-hidden transition-all duration-300 border-2 border-pink-400 relative">
+        <div className="absolute top-2 right-2 bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+          You Found a Promotion
+        </div>
+        <div className="p-4 flex flex-col items-center pt-8">
+          <div className="w-40 h-40 rounded-full overflow-hidden mb-4" style={{ backgroundColor: '#FFFFFF' }}>
+            <img 
+              src={item.imageUrl || "https://placehold.co/300x300?text=No+Image"} 
+              alt={item.title} 
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <h3 className="text-xl mb-2 text-pink-700 font-bold">{item.title}</h3>
+          <div className="flex justify-center items-center w-full mb-2">
+            <div className="text-lg text-pink-600 font-semibold">{item.promotionText}</div>
+          </div>
+          <p className="text-sm text-center mb-4 text-gray-700">{item.promotionValue}</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="gear-card bg-card rounded-lg shadow-lg overflow-hidden transition-all duration-300">
       <div className="p-4 flex flex-col items-center">

@@ -13,6 +13,9 @@ export type GearItem = {
   dailyPrice: number;
   weeklyPrice: number | null;
   isActive: boolean;
+  isPromotion?: boolean;
+  promotionText?: string;
+  promotionValue?: string;
 };
 
 const GearGrid = () => {
@@ -36,6 +39,38 @@ const GearGrid = () => {
           });
         });
 
+        // Fetch promotion from additionals collection
+        const additionalsRef = collection(db, "additionals");
+        const promoQuery = query(
+          additionalsRef,
+          where("type", "==", "Promotion"),
+          where("visible", "==", true)
+        );
+        const promoSnapshot = await getDocs(promoQuery);
+
+        if (!promoSnapshot.empty) {
+          const promoDoc = promoSnapshot.docs[0];
+          const promoData = promoDoc.data();
+          
+          // Create promotion card
+          const promotionCard: GearItem = {
+            id: `promo-${promoDoc.id}`,
+            title: promoData.name,
+            description: promoData.modifications?.['0']?.value || "",
+            imageUrl: "/assets/Promo.png",
+            dailyPrice: 0,
+            weeklyPrice: null,
+            isActive: true,
+            isPromotion: true,
+            promotionText: promoData.modifications?.['0']?.name || "",
+            promotionValue: promoData.modifications?.['0']?.value || ""
+          };
+
+          // Insert promotion at random position
+          const randomIndex = Math.floor(Math.random() * (fetchedItems.length + 1));
+          fetchedItems.splice(randomIndex, 0, promotionCard);
+        }
+
         setGearItems(fetchedItems);
         setFilteredItems(fetchedItems);
         setLoading(false);
@@ -48,12 +83,17 @@ const GearGrid = () => {
     fetchGearItems();
   }, []);
 
-  // Filter items based on search query
+  // Filter items based on search query (exclude promotions from search)
   useEffect(() => {
-    const filtered = gearItems.filter((item) => 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    const filtered = gearItems.filter((item) => {
+      // If it's a promotion, only show when there's no search query
+      if (item.isPromotion) {
+        return searchQuery === "";
+      }
+      // Regular items are filtered normally
+      return item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    });
     setFilteredItems(filtered);
   }, [searchQuery, gearItems]);
 
