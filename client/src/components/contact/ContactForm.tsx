@@ -185,7 +185,7 @@ Items: ${itemsList || 'None'}
             name="area"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Area you're staying in</FormLabel>
+                <FormLabel>In what area are you staying in?</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
