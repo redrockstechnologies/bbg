@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { Link } from "wouter";
 import Logo from "@/components/ui/logo";
@@ -41,9 +42,11 @@ const Navbar = () => {
     }
   ];
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <>
-      {/* Desktop Navigation */}
+      {/* Navigation */}
       <nav className="bg-white shadow-md sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center">
@@ -80,7 +83,7 @@ const Navbar = () => {
       {/* Mobile Navigation - BubbleMenu */}
       <div className="md:hidden">
         <BubbleMenu
-          //logo={<Logo/>}
+          logo=""
           items={menuItems}
           menuAriaLabel="Toggle navigation"
           menuBg="hsl(345, 100%, 97%)"
@@ -89,6 +92,7 @@ const Navbar = () => {
           animationEase="back.out(1.5)"
           animationDuration={0.5}
           staggerDelay={0.12}
+          onMenuClick={setIsMenuOpen}
         />
       </div>
     </>

@@ -1,4 +1,3 @@
-
 .bubble-menu {
   left: 0;
   right: 0;
@@ -33,7 +32,10 @@
   pointer-events: auto;
 }
 
-.bubble-menu,
+.bubble-menu .logo-bubble {
+  display: none;
+}
+
 .bubble-menu .toggle-bubble {
   will-change: transform;
 }
