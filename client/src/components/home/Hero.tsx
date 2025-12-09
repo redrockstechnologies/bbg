@@ -2,7 +2,7 @@ import { Link } from "wouter";
 
 const Hero = () => {
   return (
-    <div className="relative h-96 md:h-[500px] overflow-hidden rounded-lg mt-6 mb-12">
+    <div className="relative h-[60vh] md:h-[70vh] lg:h-[80vh] overflow-hidden w-full">
       {/* Overlay */}
       <div className="absolute inset-0 bg-black opacity-0 z-10"></div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-50 z-10"></div>
@@ -15,7 +15,7 @@ const Hero = () => {
       />
 
       {/* Hero Content */}
-      <div className="absolute bottom-0 left-0 p-8 z-20 w-full text-white">
+      <div className="absolute bottom-0 left-0 p-8 md:p-12 lg:p-16 z-20 w-full text-white container mx-auto">
         <h1 className="text-3xl md:text-5xl mb-4 leading-tight">
           Relax, everything Baby needs is already here.
         </h1>
