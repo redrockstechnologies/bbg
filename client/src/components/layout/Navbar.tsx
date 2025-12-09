@@ -36,14 +36,14 @@ const Navbar = () => {
               Baby Gear
             </span>
           </Link>
-          <Link href="/contact">
-            <span className={`text-primary hover:text-accent font-medium py-2 cursor-pointer ${isActive('/contact') ? 'active-tab' : ''}`}>
-              Contact Us
-            </span>
-          </Link>
           <Link href="/baby-essentials">
             <span className={`text-primary hover:text-accent font-medium py-2 cursor-pointer ${isActive('/baby-essentials') ? 'active-tab' : ''}`}>
               Baby Essentials
+            </span>
+          </Link>
+          <Link href="/contact">
+            <span className={`text-primary hover:text-accent font-medium py-2 cursor-pointer ${isActive('/contact') ? 'active-tab' : ''}`}>
+              Contact Us
             </span>
           </Link>
         </div>
