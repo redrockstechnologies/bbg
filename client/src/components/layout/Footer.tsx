@@ -51,7 +51,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link href="/gear">
-                  <span className="hover:text-accent transition-colors cursor-pointer">Our Gear</span>
+                  <span className="hover:text-accent transition-colors cursor-pointer">Baby Gear</span>
                 </Link>
               </li>
               <li>
@@ -64,14 +64,7 @@ const Footer = () => {
                   <span className="hover:text-accent transition-colors cursor-pointer">Contact</span>
                 </Link>
               </li>
-              <li>
-                <span 
-                  className="hover:text-accent transition-colors cursor-pointer"
-                  onClick={handleTermsClick}
-                >
-                  Terms & Conditions
-                </span>
-              </li>
+              
             </ul>
           </div>
           

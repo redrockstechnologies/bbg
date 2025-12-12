@@ -22,11 +22,19 @@ const Hero = () => {
         <p className="text-xl md:text-2xl mb-8">
           Experience effortless holidays with Ballito Baby Gear
         </p>
-        <Link href="/gear">
-          <span className="bg-accent hover:bg-accent/90 text-white font-medium py-3 px-6 rounded-full inline-block transition-colors cursor-pointer">
-            Browse Our Gear
-          </span>
-        </Link>
+        <div className="flex flex-col md:flex-row gap-4">
+          <Link href="/gear">
+            <span className="bg-accent hover:bg-accent/90 text-white font-medium py-3 px-6 rounded-full inline-block transition-colors cursor-pointer">
+              Browse Our Gear
+            </span>
+          </Link>
+
+          <Link href="/gear">
+            <span className="bg-accent hover:bg-accent/90 text-white font-medium py-3 px-6 rounded-full inline-block transition-colors cursor-pointer">
+              Get Baby Essentials
+            </span>
+          </Link>
+        </div>
       </div>
     </div>
   );
