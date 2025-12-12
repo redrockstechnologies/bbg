@@ -69,6 +69,8 @@ const ContactForm = () => {
       const formattedMessage = `
 ${data.message}
 
+Arrival Date: ${data.arrivalDate || 'Not specified'}
+Departure Date: ${data.departureDate || 'Not specified'}
 Area: ${data.area}
 Delivery: ${data.needsDelivery ? 'Yes' : 'No'}
 Pickup: ${data.needsPickup ? 'Yes' : 'No'}
